@@ -2,7 +2,7 @@
 
 Monorepo gồm:
 - **backend/** — Laravel 10+ (REST API)
-- **frontend/** — React (Vite hoặc Create React App)
+- **frontend/** — React (Create React App)
 
 ---
 
@@ -11,7 +11,7 @@ Monorepo gồm:
 - Node.js ≥ 18 & npm
 - PHP ≥ 8.1
 - Composer
-- MySQL/MariaDB (hoặc SQLite)
+- MySQL
 - Git
 
 **Kiểm tra nhanh:**
@@ -27,15 +27,15 @@ git --version
 ## 2. Clone & cấu trúc thư mục
 
 ```sh
-git clone https://github.com/<org-or-username>/zenstyle.git
-cd zenstyle
+git clone https://github.com/lengockieuanh/ZenStyle.git
+cd ZenStyle
 ```
 
 **Cấu trúc chính:**
 ```
-zenstyle/
+ZenStyle/
 ├─ backend/      # Laravel API
-└─ frontend/     # React App (Vite hoặc CRA)
+└─ frontend/     # React App (Create React App)
 ```
 
 ---
@@ -77,44 +77,32 @@ DB_DATABASE=zenstyle
 DB_USERNAME=root
 DB_PASSWORD=
 
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:3000
 ```
 
-> Nếu dùng SQLite: đặt `DB_CONNECTION=sqlite` và tạo file `database/database.sqlite`.
+> Dùng MySQL: đặt `DB_CONNECTION=mysql` và tạo file `database/database.mysql`.
 
 ---
 
-### Frontend (React)
+### Frontend (React - Create React App)
 ```sh
 cd ../frontend
 npm install
 
 # Tạo file .env từ mẫu (nếu có)
-# Vite: cp .env.example .env
-# CRA:  cp .env.example .env
+copy .env.example .env        # Windows PowerShell
+# hoặc: cp .env.example .env  # Git Bash/Mac/Linux
 
-npm run dev   # Vite => http://localhost:5173
-# hoặc
 npm start     # CRA => http://localhost:3000
 ```
 
 **Ví dụ .env tối thiểu (`frontend/.env`):**
-
-- **Vite:**
-  ```
-  VITE_API_BASE_URL=http://127.0.0.1:8000
-  ```
-- **Create React App (CRA):**
-  ```
-  REACT_APP_API_BASE_URL=http://127.0.0.1:8000
-  ```
+```
+REACT_APP_API_BASE_URL=http://127.0.0.1:8000
+```
 
 **Gọi API trong code FE:**
 ```js
-// Vite
-const api = import.meta.env.VITE_API_BASE_URL;
-
-// CRA
 const api = process.env.REACT_APP_API_BASE_URL;
 ```
 
@@ -175,9 +163,8 @@ php artisan route:list      # xem routes
 
 **Frontend**
 ```sh
-npm run dev     # Vite dev server
-npm run build   # build production
-npm run preview # xem thử build (Vite)
+npm start     # CRA dev server
+npm run build # build production
 ```
 
 ---
@@ -185,7 +172,7 @@ npm run preview # xem thử build (Vite)
 ## 8. Troubleshooting
 
 - **FE không gọi được API (CORS):**
-  - Kiểm tra `config/cors.php` và `FRONTEND_URL` trùng với origin FE (`http://localhost:5173` hoặc `http://localhost:3000`).
+  - Kiểm tra `config/cors.php` và `FRONTEND_URL` trùng với origin FE (`http://localhost:3000`).
 - **php artisan báo thiếu extension:**
   - Mở `php.ini` bật các extension cần (`pdo_mysql`, `mbstring`, `openssl`, `intl`…).
 - **Không thấy APP_KEY hoặc 500 error:**
@@ -212,4 +199,3 @@ npm run preview # xem thử build (Vite)
 - Auth (JWT/Passport/Sanctum)
 - CRUD Services/Bookings
 - Phân quyền (Admin/Receptionist/Stylist/Client)
-- CI/CD (tùy chọn)
