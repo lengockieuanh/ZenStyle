@@ -1,46 +1,99 @@
-// src/pages/Gallery.jsx
-import { useState } from "react";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import React, { useState } from "react";
+import styles from "./css/App.module.css"; 
 
-export default function Gallery() {
-  const images = [
-    "/assets/img/gallery-1.jpg","/assets/img/gallery-2.jpg","/assets/img/gallery-3.jpg",
-    "/assets/img/gallery-4.jpg","/assets/img/gallery-5.jpg","/assets/img/gallery-6.jpg",
-  ];
+  const hotels = [
+  { 
+    id: 1, 
+    name: "Wink Hotel Saigon Centre", 
+    rooms: 237, 
+    location: "HCMC", 
+    description: "Wink Hotel Saigon Centre shares the neighborhood...", 
+    image: "/assets/img/shampoo.jpg" 
+  },
+  { 
+    id: 2, 
+    name: "Wink Hotel Danang Centre", 
+    rooms: 244, 
+    location: "DaNang", 
+    description: "A neighborhood hub designed for innovation...", 
+    image: "/assets/img/wax.jpg" 
+  },
+  { 
+    id: 3, 
+    name: "Wink Icon Danang", 
+    rooms: 322, 
+    location: "HaNoi", 
+    description: "Stay at the iconic Wink Icon Danang...", 
+    image: "/assets/img/massage.jpg" 
+  },
+  { 
+    id: 4, 
+    name: "Wink Hotel Can Tho Riverside", 
+    rooms: 180, 
+    location: "CanTho", 
+    description: "Relax by the Mekong river with a vibrant city view...", 
+    image: "/assets/img/tinhdau.jpg" 
+  },
+  { 
+    id: 5, 
+    name: "Wink Hotel Tuy Hoa Beach", 
+    rooms: 150, 
+    location: "TuyHoa", 
+    description: "Enjoy sunny beaches and fresh seafood in Tuy Hoa...", 
+    image: "/assets/img/nuochoa.jpg" 
+  },
+  { 
+    id: 6, 
+    name: "Wink Hotel Hai Phong Central", 
+    rooms: 210, 
+    location: "HaiPhong", 
+    description: "A modern hub in the bustling Hai Phong city center...", 
+    image: "/assets/img/daugoidau.jpg" 
+  }
+];
 
-  const [open, setOpen] = useState(false);
-  const [index, setIndex] = useState(0);
+
+
+function ProductList() {
+  const [selectedLocation, setSelectedLocation] = useState("All");
+
+  const filteredHotels = selectedLocation === "All"
+    ? hotels
+    : hotels.filter((hotel) => hotel.location === selectedLocation);
 
   return (
-    <div className="container-fluid gallery py-5">
-      <div className="container">
-        <div className="text-center">
-          <h1 className="font-dancing-script text-primary">Gallery</h1>
-          <h1 className="mb-5">Explore Our Gallery</h1>
-        </div>
+    <div>
+      {/* Thanh filter */}
+      <div className={styles.filterBar}>
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+        >
+          <option value="All">ALL LOCATION</option>
+          <option value="HCMC">HCMC</option>
+          <option value="DaNang">DANANG</option>
+          <option value="HaNoi">HANOI</option>
+        </select>
+      </div>
 
-        <div className="row g-0">
-          {images.map((src, i) => (
-            <div className={`col-md-${i === 0 || i === 5 ? "6" : "3"}`} key={src}>
-              <div className="gallery-item h-100" role="button" onClick={() => { setIndex(i); setOpen(true); }}>
-                <img src={src} className="img-fluid w-100 h-100" alt={`g-${i}`} />
-                <div className="gallery-icon">
-                  <span className="btn btn-primary btn-lg-square"><i className="fa fa-eye"></i></span>
-                </div>
-              </div>
+      {/* Danh sách hotel */}
+      <div className={styles.hotelList}>
+        {filteredHotels.map((hotel) => (
+          <div className={styles.hotelCard} key={hotel.id}>
+            <img src={hotel.image} alt={hotel.name} />
+            <div className={styles.hotelInfo}>
+              <h2>{hotel.name}</h2>
+              <p className={styles.meta}>
+                🏨 {hotel.rooms} ROOMS • 📍 {hotel.location}
+              </p>
+              <p className={styles.desc}>{hotel.description}</p>
+              <button className={styles.btn}>Explore Hotel</button>
             </div>
-          ))}
-        </div>
-
-        {/* Lightbox */}
-        <Lightbox
-          open={open}
-          close={() => setOpen(false)}
-          index={index}
-          slides={images.map(src => ({ src }))}
-        />
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+export default ProductList;

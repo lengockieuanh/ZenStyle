@@ -1,0 +1,165 @@
+body {
+  background-color: rgb(234, 234, 234);
+}
+
+.hotelList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.hotelCard {
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.hotelCard:hover {
+  transform: translateY(-5px);
+}
+
+.hotelCard img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.hotelInfo {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hotelInfo h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.meta {
+  font-size: 14px;
+  color: gray;
+  margin-bottom: 12px;
+}
+
+.desc {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.btn {
+  color: black;
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  align-self: flex-start;
+  position: relative;
+  padding-right: 30px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M10 7l5 5-5 5z'/></svg>") no-repeat center;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M10 7l5 5-5 5z'/></svg>") no-repeat center;
+  background-color: black;
+}
+
+.btn:hover::after {
+  background-color: #e63946;
+}
+
+.btn:hover {
+  color: #e63946;
+}
+
+.filterBar {
+  padding: 15px 20px;
+  background:rgb(234, 234, 234);
+  outline: none;
+  margin: 20px auto;
+  display: flex;
+  justify-content: flex-start;
+  max-width: 1100px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.filterBar select {
+  outline: none;
+  padding: 10px 14px;
+  font-size: 15px;
+  background-color: rgb(234, 234, 234);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  border: 1px solid rgb(234, 234, 234);
+  font-weight: bold;
+}
+/* Nav container */
+.nav-list {
+  display: flex;
+  gap: 30px;
+  justify-content: center;   /* căn giữa */
+  padding: 15px 0;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Link chung */
+.nav-list a {
+  text-decoration: none;
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  position: relative;
+  padding-bottom: 6px; /* chừa chỗ cho gạch */
+  transition: color 0.3s ease;
+}
+
+/* underline mặc định (ẩn đi) */
+.nav-list a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: #e63946;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+/* Hover: underline chạy từ trái qua */
+.nav-list a:hover {
+  color: #e63946;
+}
+.nav-list a:hover::after {
+  width: 100%;
+}
+
+/* Active: underline luôn hiển thị */
+.nav-item.active {
+  color: #e63946;
+}
+.nav-item.active::after {
+  width: 100%;
+}
