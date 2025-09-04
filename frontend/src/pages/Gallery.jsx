@@ -87,7 +87,7 @@ function ProductList() {
                 🏨 {hotel.rooms} ROOMS • 📍 {hotel.location}
               </p>
               <p className={styles.desc}>{hotel.description}</p>
-              <button className={styles.btn}>Explore Hotel</button>
+              <button className={styles.btn}>Buy Now</button>
             </div>
           </div>
         ))}
