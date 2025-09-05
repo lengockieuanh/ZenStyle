@@ -4,24 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up(): void {
         Schema::create('purchase_order_details', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->id('detail_id');
+            $table->foreignId('order_id')->constrained('purchase_orders')->onDelete('cascade');
+            $table->foreignId('item_id')->constrained('inventory')->onDelete('cascade');
+            $table->integer('quantity');
+            $table->decimal('price', 10, 2);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('purchase_order_details');
     }
 };

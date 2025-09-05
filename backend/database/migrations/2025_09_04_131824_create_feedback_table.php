@@ -4,15 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('feedback', function (Blueprint $table) {
-            $table->id();
+            $table->id('feedback_id');
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->integer('rating');
+            $table->text('comments')->nullable();
             $table->timestamps();
         });
     }

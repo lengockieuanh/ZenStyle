@@ -17,10 +17,14 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $primaryKey = 'user_id';
+
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'role', 
     ];
 
     /**
@@ -45,4 +49,36 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    
+      public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'user_id');
+    }
+
+    public function clientHistories()
+    {
+        return $this->hasMany(ClientHistory::class, 'user_id');
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(UserSchedule::class, 'user_id');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(UserAttendance::class, 'user_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'user_id');
+    }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class, 'user_id');
+    }
+
 }
