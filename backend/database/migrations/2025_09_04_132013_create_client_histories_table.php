@@ -8,10 +8,10 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('client_histories', function (Blueprint $table) {
             $table->id('history_id');
-            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('appointment_id')->constrained('appointments')->onDelete('cascade');
+            $table->foreignId('client_id')->constrained('clients','client_id')->onDelete('cascade');
+            $table->foreignId('service_id')->constrained('services','service_id')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users','user_id')->onDelete('cascade');
+            $table->foreignId('appointment_id')->constrained('appointments','appointment_id')->onDelete('cascade');
             $table->text('notes')->nullable();
             $table->timestamps();
         });

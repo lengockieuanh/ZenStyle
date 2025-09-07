@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id('order_id');
-            $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
+            $table->foreignId('supplier_id')->constrained('suppliers','supplier_id')->onDelete('cascade');
             $table->dateTime('order_date');
             $table->enum('status', ['pending','completed','cancelled']);
         });

@@ -8,8 +8,8 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('purchase_order_details', function (Blueprint $table) {
             $table->id('detail_id');
-            $table->foreignId('order_id')->constrained('purchase_orders')->onDelete('cascade');
-            $table->foreignId('item_id')->constrained('inventory')->onDelete('cascade');
+            $table->foreignId('order_id')->constrained('purchase_orders','order_id')->onDelete('cascade');
+            $table->foreignId('item_id')->constrained('inventory','item_id')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
         });
