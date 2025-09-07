@@ -31,4 +31,9 @@ class Client extends Model
     {
         return $this->hasMany(Feedback::class, 'client_id');
     }
+    public function orders()
+{
+    return $this->hasMany(Order::class, 'client_id', 'client_id');
+}
+
 }

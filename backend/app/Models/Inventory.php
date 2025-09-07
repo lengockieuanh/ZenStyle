@@ -16,4 +16,9 @@ class Inventory extends Model
     {
         return $this->hasMany(PurchaseOrderDetail::class, 'item_id');
     }
+    public function orderDetails()
+{
+    return $this->hasMany(OrderDetail::class, 'item_id', 'item_id');
+}
+
 }
