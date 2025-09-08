@@ -26,7 +26,7 @@ export default function Nav() {
           <div className="navbar-nav mx-auto">
             <NavLink to="/" end className="nav-item nav-link">Home</NavLink>
             <NavLink to="/services" className="nav-item nav-link">Service</NavLink>
-            <NavLink to="/gallery" className="nav-item nav-link">Product</NavLink>
+            <NavLink to="/products" className="nav-item nav-link">Product</NavLink>
             <NavLink to="/price" className="nav-item nav-link">Price</NavLink>
             <NavLink to="/contact" className="nav-item nav-link">Contact</NavLink>
           </div>

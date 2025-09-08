@@ -12,16 +12,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed 1 user mẫu
-        User::factory()->create([
-            'name'  => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+
 
         // Gọi các seeder khác
-       $this->call([
-        OrdersTableSeeder::class,
-        OrderDetailsTableSeeder::class,
-    ]);
+        $this->call([
+            UsersTableSeeder::class,
+            ClientsTableSeeder::class,
+            InventorySeeder::class,
+            OrdersTableSeeder::class,
+            OrderDetailsTableSeeder::class,
+
+        ]);
     }
 }

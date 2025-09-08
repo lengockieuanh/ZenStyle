@@ -16,6 +16,8 @@ return new class extends Migration {
             $table->text('preferences')->nullable();
             $table->integer('loyalty_points')->default(0);
             $table->string('membership_tier')->nullable();
+            $table->timestamps();
+
         });
     }
 

@@ -9,7 +9,7 @@ class Inventory extends Model
     protected $primaryKey = 'item_id';
 
     protected $fillable = [
-        'name', 'quantity', 'threshold', 'unit_price'
+        'name', 'quantity', 'threshold', 'unit_price','type'
     ];
 
     public function purchaseOrderDetails()

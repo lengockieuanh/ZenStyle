@@ -1,0 +1,42 @@
+.checkoutWrapper {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 10px;
+}
+
+.checkoutContainer {
+  display: flex;
+  gap: 20px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.checkoutImage img {
+  width: 300px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.checkoutInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.checkoutInfo h2 {
+  margin-top: 0;
+}
+
+.checkoutInfo p {
+  margin: 5px 0;
+}
+
+.checkoutMessage {
+  margin-top: 10px;
+  color: green;
+  font-weight: bold;
+}
