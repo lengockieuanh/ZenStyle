@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import "./css/auth.css"; // CSS ở bước 2
+import { AuthContext } from "../AuthContext";
+import "./css/auth.css";
 
 export default function Login() {
+  const { login } = useContext(AuthContext);
   const [tab, setTab] = useState("email"); // 'email' | 'phone'
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ email: "", phone: "", password: "" });
@@ -29,17 +31,34 @@ export default function Login() {
     e.preventDefault();
     if (!validate()) return;
 
-    // FRONTEND ONLY: tạm thời giả lập submit
     setLoading(true);
-    setTimeout(() => {
-      console.log("Payload to backend:", {
-        method: tab,
-        identifier: tab === "email" ? form.email : form.phone,
-        password: form.password,
+    setErrors({});
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          identifier: tab === "email" ? form.email : form.phone, // ✅ đổi thành identifier
+          password: form.password,
+        }),
       });
+
+      const data = await response.json();
       setLoading(false);
-      alert("Submitted! (Frontend demo)");
-    }, 600);
+
+      if (!response.ok) {
+        setErrors({ api: data.message || "Login failed" });
+      } else {
+        login(data); // ✅ gọi hàm login trong AuthContext
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrors({ api: "Network error: " + err.message });
+    }
   };
 
   return (
@@ -66,6 +85,8 @@ export default function Login() {
         </div>
 
         <form onSubmit={submit} noValidate>
+          {errors.api && <div className="alert alert-danger">{errors.api}</div>}
+
           {tab === "email" ? (
             <div className="mb-3">
               <input
@@ -77,7 +98,9 @@ export default function Login() {
                 onChange={onChange}
                 autoComplete="username"
               />
-              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+              {errors.email && (
+                <div className="invalid-feedback">{errors.email}</div>
+              )}
             </div>
           ) : (
             <div className="mb-3">
@@ -90,7 +113,9 @@ export default function Login() {
                 onChange={onChange}
                 autoComplete="tel"
               />
-              {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
+              {errors.phone && (
+                <div className="invalid-feedback">{errors.phone}</div>
+              )}
             </div>
           )}
 
@@ -99,7 +124,9 @@ export default function Login() {
             <input
               name="password"
               type={showPass ? "text" : "password"}
-              className={`form-control ${errors.password ? "is-invalid" : ""}`}
+              className={`form-control ${
+                errors.password ? "is-invalid" : ""
+              }`}
               placeholder="Password"
               value={form.password}
               onChange={onChange}
@@ -113,24 +140,39 @@ export default function Login() {
             >
               <i className={`bi ${showPass ? "bi-eye-slash" : "bi-eye"}`} />
             </button>
-            {errors.password && <div className="invalid-feedback d-block">{errors.password}</div>}
+            {errors.password && (
+              <div className="invalid-feedback d-block">
+                {errors.password}
+              </div>
+            )}
           </div>
 
           {/* Links */}
           <div className="d-flex justify-content-between mb-3">
-            <Link to="/signup" className="text-decoration-none">Sign up</Link>
-            <Link to="/forgot-password" className="text-decoration-none">Forgot password?</Link>
+            <Link to="/signup" className="text-decoration-none">
+              Sign up
+            </Link>
+            <Link to="/forgot-password" className="text-decoration-none">
+              Forgot password?
+            </Link>
           </div>
 
-          <button className="btn btn-primary w-100 py-2" disabled={loading} type="submit">
+          <button
+            className="btn btn-primary w-100 py-2"
+            disabled={loading}
+            type="submit"
+          >
             {loading ? "Logging in..." : "Log in"}
           </button>
 
           <div className="text-center my-3">Log in with the booking number</div>
 
           <p className="small text-muted mb-0">
-            By logging in or signing up, you give your <a href="#!">Consent to personal data processing</a> and
-            confirm that you have read the <a href="#!">Online booking rules</a> and <a href="#!">Privacy policy</a>.
+            By logging in or signing up, you give your{" "}
+            <a href="#!">Consent to personal data processing</a> and confirm
+            that you have read the{" "}
+            <a href="#!">Online booking rules</a> and{" "}
+            <a href="#!">Privacy policy</a>.
           </p>
         </form>
       </div>

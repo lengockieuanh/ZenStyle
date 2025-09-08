@@ -1,7 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const priceItems = [
-  { img: "price-1.jpg", name: "Haircut", price: 49 },
+  { img: "spa-item1.jpg", name: "Haircut", price: 49 },
   { img: "price-2.jpg", name: "Makeup", price: 79 },
   { img: "price-3.jpg", name: "Manicure", price: 59 },
   { img: "price-4.jpg", name: "Pedicure", price: 49 },
@@ -10,6 +14,22 @@ const priceItems = [
 ];
 
 export default function Price() {
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
+
   return (
     <div className="container-fluid price px-0 py-5">
       <div className="row g-0">
@@ -37,15 +57,23 @@ export default function Price() {
         </div>
         <div className="col-md-6">
           <div className="h-100 bg-dark p-5">
-            {priceItems.map(item => (
-              <div className="price-item mb-3 d-flex align-items-center" key={item.name}>
-                <img className="img-fluid flex-shrink-0" src={`/assets/img/${item.img}`} alt={item.name} />
-                <div className="text-end px-4 ms-auto">
-                  <h6 className="text-uppercase text-primary">{item.name}</h6>
-                  <h3 className="text-white mb-0">${item.price}</h3>
+            <Slider {...settings}>
+              {priceItems.map(item => (
+                <div key={item.name}>
+                  <div className="price-item">
+                    <h3 className="text-uppercase text-primary">{item.name}</h3>
+                    <img className="img-fluid flex-shrink-0" src={`/assets/img/${item.img}`} alt={item.name} />
+                    <div className="text-end px-4 ms-auto">
+                      
+                      <h3 className="text-white mb-0">${item.price}</h3>
+                      <button className="booknow">
+                        <Link to="/login" className="text-decoration-none">Book Now</Link>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </Slider>
           </div>
         </div>
       </div>
