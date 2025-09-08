@@ -18,7 +18,7 @@ return new class extends Migration
 
             // Khóa ngoại
             $table->foreign('order_id')->references('order_id')->on('orders')->onDelete('cascade');
-            $table->foreign('item_id')->references('item_id')->on('inventory')->onDelete('cascade');
+            $table->foreign('item_id')->references('item_id')->on('inventories')->onDelete('cascade');
         });
     }
 
