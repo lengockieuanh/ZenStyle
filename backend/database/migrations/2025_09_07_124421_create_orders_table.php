@@ -16,6 +16,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
             $table->decimal('total_price', 10, 2);
             $table->enum('payment_method', ['cash', 'card', 'transfer'])->nullable();
+            $table->string('email')->nullable();
             $table->timestamps();
 
             // Khóa ngoại

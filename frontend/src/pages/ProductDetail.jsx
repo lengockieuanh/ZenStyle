@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";import styles from "./css/ProductDetail.module.css";
+import { useParams, useNavigate, Link } from "react-router-dom"; import styles from "./css/ProductDetail.module.css";
 
 function ProductDetail() {
     const { id } = useParams();
@@ -30,6 +30,9 @@ function ProductDetail() {
     const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
     const handleAddToCart = () => {
+        navigate("/checkout", { state: { product, quantity } });
+    };
+        const handleBuyNow = () => {
         navigate("/checkout", { state: { product, quantity } });
     };
 
@@ -64,9 +67,9 @@ function ProductDetail() {
 
             <div className={styles.right}>
                 <div className={styles.breadcrumb}>
-                   <Link to="/" className={styles.breadcrumbLink}>HOME</Link> / <Link to="/products" className={styles.breadcrumbLink}>PRODUCT</Link>
+                    <Link to="/" className={styles.breadcrumbLink}>HOME</Link> / <Link to="/products" className={styles.breadcrumbLink}>PRODUCT</Link>
                     <div className={styles.navArrows}>
-                       
+
                     </div>
                 </div>
 
@@ -85,9 +88,15 @@ function ProductDetail() {
 
                 <p className={styles.shortDescription}>{product.short_description || "Short Description"}</p>
 
-                <button className={styles.addToCartBtn} onClick={handleAddToCart}>
-                    Add to Cart
-                </button>
+                <div className={styles.actionButtons}>
+                    <button className={styles.addToCartBtn} onClick={handleAddToCart}>
+                        Add to Cart
+                    </button>
+                    <button className={styles.buyNowBtn} onClick={handleBuyNow }>
+                        Buy Now
+                    </button>
+                </div>
+
 
                 <div className={styles.metaActions}>
                     <div className={styles.actionItem}>
@@ -96,6 +105,11 @@ function ProductDetail() {
                     <div className={styles.actionItem}>
                         <span>🔗</span> SHARE
                     </div>
+                </div>
+                   <div className={styles.orderControl}>
+                    <button onClick={decrement} className={styles.qtyBtn}>-</button>
+                    <span className={styles.qty}>{quantity}</span>
+                    <button onClick={increment} className={styles.qtyBtn}>+</button>
                 </div>
 
                 <div className={styles.productMeta}>
@@ -109,11 +123,7 @@ function ProductDetail() {
                 <p>💰 Price: {product.unit_price} VND</p>
                 <p>⚠ Threshold: {product.threshold}</p>
 
-                <div className={styles.orderControl}>
-                    <button onClick={decrement} className={styles.qtyBtn}>-</button>
-                    <span className={styles.qty}>{quantity}</span>
-                    <button onClick={increment} className={styles.qtyBtn}>+</button>
-                </div>
+             
             </div>
         </div>
     );

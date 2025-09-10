@@ -8,6 +8,7 @@ function Checkout() {
   const { product, quantity } = location.state || {};
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [email, setEmail] = useState(""); // thêm state email
 
   if (!product) return <p>No product in cart!</p>;
 
@@ -15,6 +16,11 @@ function Checkout() {
   const user_id = null;
 
   const handleConfirmPayment = async () => {
+    if (!email) {
+      setMessage("Vui lòng nhập email để nhận hóa đơn");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
 
@@ -25,6 +31,7 @@ function Checkout() {
         body: JSON.stringify({
           client_id,
           user_id,
+          email, // gửi email
           items: [{ item_id: product.item_id, quantity, price: product.unit_price }],
           payment_method: "cash",
         }),
@@ -33,11 +40,9 @@ function Checkout() {
       const data = await response.json();
       if (response.ok) {
         setMessage("Order successfully created! Order ID: " + data.order.order_id);
-
-        // Chờ 1s rồi quay về trang product
         setTimeout(() => {
           navigate("/products");
-        }, 1000);
+        }, 500);
       } else {
         setMessage("Error: " + (data.message || "Something went wrong"));
       }
@@ -61,6 +66,19 @@ function Checkout() {
           <p>Price: {product.unit_price} VND</p>
           <p>Quantity: {quantity}</p>
           <p>Total: {product.unit_price * quantity} VND</p>
+
+          {/* Input email */}
+          <div style={{ marginBottom: "10px" }}>
+            <label>Email nhận hóa đơn:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Nhập email của bạn"
+              style={{ width: "100%", padding: "5px", marginTop: "5px" }}
+            />
+          </div>
+
           <button
             className={styles.btn}
             onClick={handleConfirmPayment}

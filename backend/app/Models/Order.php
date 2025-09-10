@@ -18,6 +18,7 @@ class Order extends Model
         'status',
         'total_price',
         'payment_method',
+        'email',
     ];
 
     //  Quan hệ với Client (mỗi đơn thuộc về 1 khách)

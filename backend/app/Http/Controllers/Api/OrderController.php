@@ -7,6 +7,11 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Mail\OrderConfirmation;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 
 class OrderController extends Controller
 {
@@ -27,6 +32,8 @@ class OrderController extends Controller
             'client_id' => 'required|exists:clients,client_id',
             'user_id' => 'nullable|exists:users,user_id',
             'items' => 'required|array', // mảng sản phẩm: [{item_id, quantity}]
+            'email' => 'required|email',
+
         ]);
 
         $total = 0;
@@ -41,6 +48,7 @@ class OrderController extends Controller
             'status' => 'pending',
             'total_price' => $total,
             'payment_method' => $request->payment_method ?? 'cash',
+            'email' => $request->email,
         ]);
 
         foreach ($request->items as $item) {
@@ -50,6 +58,13 @@ class OrderController extends Controller
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
             ]);
+        }
+
+        try {
+            Mail::to($order->email)->send(new OrderConfirmation($order));
+        } catch (Exception $e) {
+            Log::error('Lỗi gửi mail: ' . $e->getMessage());
+            return response()->json(['error' => 'Gửi mail thất bại: ' . $e->getMessage()], 500);
         }
 
         return response()->json(['order' => $order], 201);
