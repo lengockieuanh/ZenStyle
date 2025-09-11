@@ -1,18 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./css/Checkout.module.css";
 
 function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { product, quantity } = location.state || {};
+  const { product: initialProduct, quantity } = location.state || {};
+  const [product, setProduct] = useState(initialProduct);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [email, setEmail] = useState(""); // thêm state email
+  const [email, setEmail] = useState("");
+
+  // Nếu product chưa đầy đủ (chỉ có item_id từ ProductList), fetch thêm thông tin chi tiết
+  useEffect(() => {
+    if (product && !product.images) {
+      fetch(`http://127.0.0.1:8000/api/products/${product.item_id}`)
+        .then((res) => res.json())
+        .then((data) => setProduct(data))
+        .catch((err) => console.error("Error fetching product detail:", err));
+    }
+  }, [product]);
 
   if (!product) return <p>No product in cart!</p>;
 
-  const client_id = 1;
+  const client_id = 1; // ví dụ
   const user_id = null;
 
   const handleConfirmPayment = async () => {
@@ -31,7 +42,7 @@ function Checkout() {
         body: JSON.stringify({
           client_id,
           user_id,
-          email, // gửi email
+          email,
           items: [{ item_id: product.item_id, quantity, price: product.unit_price }],
           payment_method: "cash",
         }),
@@ -40,9 +51,7 @@ function Checkout() {
       const data = await response.json();
       if (response.ok) {
         setMessage("Order successfully created! Order ID: " + data.order.order_id);
-        setTimeout(() => {
-          navigate("/products");
-        }, 500);
+        setTimeout(() => navigate("/products"), 500);
       } else {
         setMessage("Error: " + (data.message || "Something went wrong"));
       }
@@ -54,12 +63,18 @@ function Checkout() {
     }
   };
 
+  // Lấy ảnh chính: ưu tiên ảnh phụ đầu tiên, nếu không có thì ảnh chính
+  const productImage =
+    product.images && product.images.length > 0
+      ? product.images[0].url
+      : product.image_url || "/assets/img/default.jpg";
+
   return (
     <div className={styles.checkoutWrapper}>
       <h1>Checkout</h1>
       <div className={styles.checkoutContainer}>
         <div className={styles.checkoutImage}>
-          <img src={`/assets/img/default.jpg`} alt={product.name} />
+          <img src={productImage} alt={product.name} />
         </div>
         <div className={styles.checkoutInfo}>
           <h2>{product.name}</h2>
@@ -67,7 +82,6 @@ function Checkout() {
           <p>Quantity: {quantity}</p>
           <p>Total: {product.unit_price * quantity} VND</p>
 
-          {/* Input email */}
           <div style={{ marginBottom: "10px" }}>
             <label>Email nhận hóa đơn:</label>
             <input

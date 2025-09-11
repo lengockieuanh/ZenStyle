@@ -9,12 +9,14 @@ function ProductList() {
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/products")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
       .then((data) => setProducts(data))
       .catch((err) => console.error("Error fetching products:", err));
   }, []);
 
-  // Nếu API có cột "location" thì filter theo location
   const filteredProducts =
     selectedType === "All"
       ? products
@@ -39,23 +41,31 @@ function ProductList() {
       <div className={styles.hotelList}>
         {filteredProducts.map((p) => (
           <div className={styles.hotelCard} key={p.item_id}>
-            {/* Nếu anh chưa có cột image trong DB thì có thể gán ảnh mặc định */}
-            <img
-              src={`/assets/img/default.jpg`}
-              alt={p.name}
-              className={styles.productImage}
-            />
+            <div
+              className={styles.imgContainer}
+              onClick={() => navigate(`/products/${p.item_id}`)}
+            >
+              <img
+                src={
+                  p.images && p.images.length > 0
+                    ? p.images[0].url
+                    : p.image_url || "/assets/img/default.jpg"
+                }
+                alt={p.name}
+              />
+            </div>
             <div className={styles.hotelInfo}>
               <h2>{p.name}</h2>
               <p className={styles.meta}>
                 📦 Số lượng: {p.quantity} • 💰 Giá: {p.unit_price} VND
               </p>
-              <p className={styles.desc}>
-                Ngưỡng cảnh báo: {p.threshold}
-              </p>
-              <button className={styles.btn}
+              <p className={styles.desc}>Ngưỡng cảnh báo: {p.threshold}</p>
+              <button
+                className={styles.btn}
                 onClick={() => navigate(`/products/${p.item_id}`)}
-              >Buy Now</button>
+              >
+                Buy Now
+              </button>
             </div>
           </div>
         ))}

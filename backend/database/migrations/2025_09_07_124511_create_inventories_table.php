@@ -13,7 +13,8 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->integer('threshold');
             $table->decimal('unit_price', 10, 2);
-            $table->enum('type',['COS','SHAMP','GEL']);
+            $table->enum('type', ['COS', 'SHAMP', 'GEL']);
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
