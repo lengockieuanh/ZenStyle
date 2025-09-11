@@ -14,7 +14,7 @@ export default function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Back to top"
     >
-      <i className="bi bi-arrow-up"></i>
+      <i className="bi bi-arrow-up"></i>🡅
     </button>
   );
 }
