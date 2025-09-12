@@ -14,3 +14,10 @@ Route::apiResource('products', InventoryController::class)->only(['index', 'show
 
 // Orders API: index, show, store (tạo đơn)
 Route::apiResource('orders', OrderController::class)->only(['index', 'show', 'store']);
+
+// Route thêm ảnh phụ cho sản phẩm
+Route::post('products/{id}/images', [InventoryController::class, 'addImage']);
+
+// Route xóa ảnh phụ theo id ảnh
+Route::delete('products/{id}/images/{imageId}', [InventoryController::class, 'deleteImage']);
+

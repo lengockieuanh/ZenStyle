@@ -14,36 +14,34 @@ class InventoryController extends Controller
      */
     public function index()
     {
-       return Inventory::with('images')->get();
-
+        return Inventory::with('images')->get();
     }
 
     /**
      * Store a newly created resource in storage.
      */
-   public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'quantity' => 'required|integer',
-        'threshold' => 'required|integer',
-        'unit_price' => 'required|numeric',
-        'type' => 'required|in:COS,SHAMP,GEL',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'quantity' => 'required|integer',
+            'threshold' => 'required|integer',
+            'unit_price' => 'required|numeric',
+            'type' => 'required|in:COS,SHAMP,GEL',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
 
-    $data = $request->all();
+        $data = $request->all();
 
-    if ($request->hasFile('image')) {
-        $path = $request->file('image')->store('images', 'public');
-        $data['image'] = $path;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images', 'public');
+            $data['image'] = $path;
+        }
+
+        $inventory = Inventory::create($data);
+
+        return response()->json($inventory->load('images'), 201);
     }
-
-    $inventory = Inventory::create($data);
-
-    return response()->json($inventory, 201); // image_url tự có
-}
-
 
     /**
      * Display the specified resource.
@@ -51,14 +49,12 @@ class InventoryController extends Controller
     public function show($id)
     {
         $product = Inventory::with('images')->findOrFail($id);
-    return response()->json($product);
+        return response()->json($product);
     }
 
     /**
      * Update the specified resource in storage.
      */
-
-
     public function update(Request $request, $id)
     {
         $inventory = Inventory::findOrFail($id);
@@ -86,9 +82,8 @@ class InventoryController extends Controller
 
         $inventory->update($data);
 
-        return response()->json($inventory);
+        return response()->json($inventory->load('images'));
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -97,7 +92,7 @@ class InventoryController extends Controller
     {
         $inventory = Inventory::findOrFail($id);
 
-        // Xoá ảnh nếu có
+        // Xoá ảnh chính nếu có
         if ($inventory->image && Storage::disk('public')->exists($inventory->image)) {
             Storage::disk('public')->delete($inventory->image);
         }
@@ -106,4 +101,46 @@ class InventoryController extends Controller
 
         return response()->json(['message' => 'Sản phẩm đã được xoá']);
     }
+
+    /**
+     * Thêm ảnh phụ cho sản phẩm.
+     */
+    public function addImage(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $inventory = Inventory::findOrFail($id);
+
+        $path = $request->file('image')->store('images', 'public');
+
+        $inventory->images()->create(['path' => $path]);
+
+        return response()->json([
+            'message' => 'Ảnh phụ đã được thêm thành công',
+            'images' => $inventory->images()->get(),
+        ]);
+    }
+
+    /**
+     * Xoá ảnh phụ theo id.
+     */
+    public function deleteImage($id, $imageId)
+    {
+        $inventory = Inventory::findOrFail($id);
+        $image = $inventory->images()->findOrFail($imageId);
+
+        if (Storage::disk('public')->exists($image->path)) {
+            Storage::disk('public')->delete($image->path);
+        }
+
+        $image->delete();
+
+        return response()->json([
+            'message' => 'Ảnh phụ đã bị xóa',
+            'images' => $inventory->images()->get(),
+        ]);
+    }
+    
 }

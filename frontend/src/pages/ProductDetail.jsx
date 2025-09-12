@@ -8,60 +8,160 @@ function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
+  const [newImage, setNewImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  // Load sản phẩm
+  const loadProduct = () => {
     fetch(`http://127.0.0.1:8000/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);
         if (data.images && data.images.length > 0) {
-          setMainImage(data.images[0].url);
+          setMainImage((prev) =>
+            prev && prev !== "" ? prev : data.images[0].url
+          );
         } else {
           setMainImage(data.image_url || "/assets/img/default.jpg");
         }
       })
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    loadProduct();
   }, [id]);
 
   if (!product) return <p>Loading...</p>;
 
   const increment = () => setQuantity((q) => q + 1);
   const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+  const handleAddToCart = () => navigate("/checkout", { state: { product, quantity } });
+  const handleBuyNow = () => navigate("/checkout", { state: { product, quantity } });
 
-  const handleAddToCart = () => {
-    navigate("/checkout", { state: { product, quantity } });
+  // Upload ảnh phụ
+  const handleUpload = async () => {
+    setError(null);
+    if (!newImage) {
+      setError("Vui lòng chọn ảnh trước khi upload.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", newImage);
+
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/products/${id}/images`,
+        { method: "POST", body: formData }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Upload thất bại");
+      } else {
+        await loadProduct();
+        setNewImage(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Lỗi kết nối khi upload");
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const handleBuyNow = () => {
-    navigate("/checkout", { state: { product, quantity } });
+  // Xóa ảnh phụ
+  const handleDelete = async (imageId, imageUrl) => {
+    if (!window.confirm("Bạn có chắc muốn xóa ảnh phụ này không?")) return;
+
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/products/${id}/images/${imageId}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Xóa thất bại");
+      } else {
+        if (mainImage === imageUrl) {
+          setMainImage(product.image_url || "/assets/img/default.jpg");
+        }
+        setProduct((p) => ({
+          ...p,
+          images: p.images ? p.images.filter((i) => i.image_id !== imageId) : [],
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Lỗi khi xóa ảnh");
+    }
   };
 
   return (
     <div className={styles.productDetail}>
+      {/* Bên trái */}
       <div className={styles.left}>
-        {/* Ảnh phụ bên trái */}
+        {/* Thumbnails */}
         <div className={styles.thumbnailList}>
-          {product.images && product.images.length > 0
-            ? product.images.map((img, index) => (
-                <img
-                  key={index}
-                  src={img.url}
-                  alt={`Thumbnail ${index + 1}`}
-                  className={`${styles.thumbnail} ${
-                    mainImage === img.url ? styles.active : ""
-                  }`}
-                  onClick={() => setMainImage(img.url)}
-                />
-              ))
-            : null}
+          {product.images?.map((img, index) => (
+            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+              <img
+                src={img.url}
+                alt={`Thumbnail ${index + 1}`}
+                className={`${styles.thumbnail} ${mainImage === img.url ? styles.active : ""}`}
+                onClick={() => setMainImage(img.url)}
+              />
+              <button
+                className={styles.deleteBtn}
+                onClick={() => handleDelete(img.image_id, img.url)}
+              >
+                <span></span>
+              </button>
+            </div>
+          ))}
         </div>
 
-        {/* Ảnh chính */}
+        {/* Main image */}
         <div className={styles.mainImageContainer}>
           <img src={mainImage} alt={product.name} className={styles.productImage} />
         </div>
+
+        {/* Upload button */}
+        <div style={{ marginTop: 12 }}>
+          <input
+            type="file"
+            accept="image/*"
+            id="uploadInput"
+            style={{ display: "none" }}
+            onChange={(e) => setNewImage(e.target.files[0] || null)}
+          />
+
+          <button
+            onClick={() => {
+              if (!newImage) document.getElementById("uploadInput").click();
+              else handleUpload();
+            }}
+            disabled={uploading}
+            className={styles.uploadBtn}
+          >
+            {/* Icon SVG background */}
+            <span></span>
+            {uploading
+              ? "Uploading..."
+              : !newImage
+                ? "Add image"
+                : "Upload"}
+          </button>
+          {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+        </div>
       </div>
 
+      {/* Bên phải */}
       <div className={styles.right}>
         <div className={styles.breadcrumb}>
           <Link to="/" className={styles.breadcrumbLink}>HOME</Link> /{" "}
