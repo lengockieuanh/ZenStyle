@@ -14,59 +14,182 @@ class InventorySeeder extends Seeder
     {
         // COSMETICS
         Inventory::create([
-            'name' => 'Nước hoa 1',
+            'name' => 'Perfume 1',
             'quantity' => 10,
             'threshold' => 2,
-            'unit_price' => 120000,
+            'unit_price' => 120,
             'type' => 'COS',
-            'image' => 'products/nuochoa1.jpg'
+            'image' => 'products/nuochoa1.jpg',
+            'description' => 'Premium perfume with a seductive scent, lasting 6-8 hours, perfect for parties or dating.',
+            'rating' => 5
         ]);
 
         Inventory::create([
-            'name' => 'Nước hoa 2',
+            'name' => 'Perfume 2',
             'quantity' => 8,
             'threshold' => 2,
-            'unit_price' => 130000,
+            'unit_price' => 130,
             'type' => 'COS',
-            'image' => 'products/nuochoa2.jpg'
+            'image' => 'products/nuochoa2.jpg',
+            'description' => 'Elegant and subtle fragrance, giving a sense of comfort and luxury.',
+            'rating' => 4
+        ]);
+
+        Inventory::create([
+            'name' => 'Perfume 3',
+            'quantity' => 14,
+            'threshold' => 3,
+            'unit_price' => 150,
+            'type' => 'COS',
+            'image' => 'products/nuochoa1.jpg',
+            'description' => 'Luxurious design with long-lasting scent, helping you stay confident all day.',
+            'rating' => 5
+        ]);
+
+        Inventory::create([
+            'name' => 'Perfume 4',
+            'quantity' => 7,
+            'threshold' => 2,
+            'unit_price' => 110,
+            'type' => 'COS',
+            'image' => 'products/nuochoa2.jpg',
+            'description' => 'Fresh and youthful fragrance, suitable for all fashion styles.',
+            'rating' => 4
         ]);
 
         // SHAMPOO
         Inventory::create([
-            'name' => 'Dầu gội 1',
+            'name' => 'Shampoo 1',
             'quantity' => 20,
             'threshold' => 5,
-            'unit_price' => 90000,
+            'unit_price' => 90,
             'type' => 'SHAMP',
-            'image' => 'products/daugoi1.jpg'
+            'image' => 'products/daugoi1.jpg',
+            'description' => 'Nourishing shampoo that makes hair soft and smooth, reduces breakage, with a pleasant fragrance.',
+            'rating' => 5
         ]);
 
         Inventory::create([
-            'name' => 'Dầu gội 2',
+            'name' => 'Shampoo 2',
             'quantity' => 18,
             'threshold' => 4,
-            'unit_price' => 95000,
+            'unit_price' => 95,
             'type' => 'SHAMP',
-            'image' => 'products/daugoi2.jpg'
+            'image' => 'products/daugoi2.jpg',
+            'description' => 'Anti-dandruff formula, cleanses the scalp, provides a refreshing cool feeling.',
+            'rating' => 4
         ]);
 
-        // GEL
         Inventory::create([
-            'name' => 'Keo xịt tóc 1',
+            'name' => 'Shampoo 3',
+            'quantity' => 22,
+            'threshold' => 6,
+            'unit_price' => 97,
+            'type' => 'SHAMP',
+            'image' => 'products/daugoi1.jpg',
+            'description' => 'Herbal extract, safe for colored hair and sensitive scalp.',
+            'rating' => 5
+        ]);
+
+        Inventory::create([
+            'name' => 'Shampoo 4',
+            'quantity' => 19,
+            'threshold' => 5,
+            'unit_price' => 99,
+            'type' => 'SHAMP',
+            'image' => 'products/daugoi2.jpg',
+            'description' => 'Strengthens hair, leaving it naturally shiny and suitable for all hair types.',
+            'rating' => 4
+        ]);
+
+        // HAIR GEL
+        Inventory::create([
+            'name' => 'Hair Spray 1',
             'quantity' => 15,
             'threshold' => 3,
-            'unit_price' => 75000,
+            'unit_price' => 75,
             'type' => 'GEL',
-            'image' => 'products/keo1.jpg'
+            'image' => 'products/keo1.jpg',
+            'description' => 'Strong hold, non-sticky, easy to wash off.',
+            'rating' => 5
         ]);
 
         Inventory::create([
-            'name' => 'Keo xịt tóc 2',
+            'name' => 'Hair Spray 2',
             'quantity' => 12,
             'threshold' => 2,
-            'unit_price' => 80000,
+            'unit_price' => 80,
             'type' => 'GEL',
-            'image' => 'products/keo2.jpg'
+            'image' => 'products/keo2.jpg',
+            'description' => 'Long-lasting hold with a gentle fragrance, ideal for daily use.',
+            'rating' => 4
+        ]);
+
+        Inventory::create([
+            'name' => 'Hair Spray 3',
+            'quantity' => 17,
+            'threshold' => 3,
+            'unit_price' => 78,
+            'type' => 'GEL',
+            'image' => 'products/keo1.jpg',
+            'description' => 'Helps quick styling, does not dry hair, easy to re-comb.',
+            'rating' => 5
+        ]);
+
+        Inventory::create([
+            'name' => 'Hair Spray 4',
+            'quantity' => 13,
+            'threshold' => 2,
+            'unit_price' => 82,
+            'type' => 'GEL',
+            'image' => 'products/keo2.jpg',
+            'description' => 'Professional hair spray for complex styling and long-lasting form.',
+            'rating' => 4
+        ]);
+
+        // EXTRA ITEMS
+        Inventory::create([
+            'name' => 'Mini Perfume',
+            'quantity' => 9,
+            'threshold' => 2,
+            'unit_price' => 100,
+            'type' => 'COS',
+            'image' => 'products/nuochoa1.jpg',
+            'description' => 'Mini version, convenient to carry, light fragrance.',
+            'rating' => 4
+        ]);
+
+        Inventory::create([
+            'name' => 'Herbal Shampoo',
+            'quantity' => 25,
+            'threshold' => 5,
+            'unit_price' => 105,
+            'type' => 'SHAMP',
+            'image' => 'products/daugoi1.jpg',
+            'description' => 'Made from natural herbs, nourishes hair from root to tip.',
+            'rating' => 5
+        ]);
+
+        Inventory::create([
+            'name' => 'Strong Styling Gel',
+            'quantity' => 14,
+            'threshold' => 3,
+            'unit_price' => 86,
+            'type' => 'GEL',
+            'image' => 'products/keo2.jpg',
+            'description' => 'Ultra strong hold, suitable for bold and edgy styles.',
+            'rating' => 5
+        ]);
+
+        Inventory::create([
+            'name' => 'VIP Perfume',
+            'quantity' => 11,
+            'threshold' => 2,
+            'unit_price' => 160,
+            'type' => 'COS',
+            'image' => 'products/nuochoa2.jpg',
+            'description' => 'Limited edition with luxurious scent, perfect as a gift.',
+            'rating' => 5
         ]);
     }
 }

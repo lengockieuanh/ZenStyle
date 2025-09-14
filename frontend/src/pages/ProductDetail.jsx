@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import styles from "./css/ProductDetail.module.css";
 
@@ -11,27 +11,27 @@ function ProductDetail() {
   const [newImage, setNewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [showReview, setShowReview] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
 
-  // Load sản phẩm
-  const loadProduct = () => {
+  const loadProduct = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);
         if (data.images && data.images.length > 0) {
-          setMainImage((prev) =>
-            prev && prev !== "" ? prev : data.images[0].url
-          );
+          setMainImage((prev) => (prev && prev !== "" ? prev : data.images[0].url));
         } else {
           setMainImage(data.image_url || "/assets/img/default.jpg");
         }
       })
       .catch((err) => console.error(err));
-  };
+  }, [id]);
 
   useEffect(() => {
     loadProduct();
-  }, [id]);
+  }, [loadProduct]);
 
   if (!product) return <p>Loading...</p>;
 
@@ -40,53 +40,39 @@ function ProductDetail() {
   const handleAddToCart = () => navigate("/checkout", { state: { product, quantity } });
   const handleBuyNow = () => navigate("/checkout", { state: { product, quantity } });
 
-  // Upload ảnh phụ
   const handleUpload = async () => {
     setError(null);
-    if (!newImage) {
-      setError("Vui lòng chọn ảnh trước khi upload.");
-      return;
-    }
-
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append("image", newImage);
 
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/products/${id}/images`,
-        { method: "POST", body: formData }
-      );
-
+      const res = await fetch(`http://127.0.0.1:8000/api/products/${id}/images`, { method: "POST", body: formData });
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Upload thất bại");
+        setError(data.message || "Upload failed");
       } else {
         await loadProduct();
         setNewImage(null);
       }
     } catch (err) {
       console.error(err);
-      setError("Lỗi kết nối khi upload");
+      setError("Upload connection error");
     } finally {
       setUploading(false);
     }
   };
 
-  // Xóa ảnh phụ
   const handleDelete = async (imageId, imageUrl) => {
-    if (!window.confirm("Bạn có chắc muốn xóa ảnh phụ này không?")) return;
+    if (!window.confirm("Are you sure you want to delete this image?")) return;
 
     try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/products/${id}/images/${imageId}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`http://127.0.0.1:8000/api/products/${id}/images/${imageId}`, { method: "DELETE" });
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Xóa thất bại");
+        setError(data.message || "Delete failed");
       } else {
         if (mainImage === imageUrl) {
           setMainImage(product.image_url || "/assets/img/default.jpg");
@@ -98,13 +84,13 @@ function ProductDetail() {
       }
     } catch (err) {
       console.error(err);
-      setError("Lỗi khi xóa ảnh");
+      setError("Delete error");
     }
   };
 
   return (
     <div className={styles.productDetail}>
-      {/* Bên trái */}
+      {/* Left */}
       <div className={styles.left}>
         {/* Thumbnails */}
         <div className={styles.thumbnailList}>
@@ -116,10 +102,7 @@ function ProductDetail() {
                 className={`${styles.thumbnail} ${mainImage === img.url ? styles.active : ""}`}
                 onClick={() => setMainImage(img.url)}
               />
-              <button
-                className={styles.deleteBtn}
-                onClick={() => handleDelete(img.image_id, img.url)}
-              >
+              <button className={styles.deleteBtn} onClick={() => handleDelete(img.image_id, img.url)}>
                 <span></span>
               </button>
             </div>
@@ -131,37 +114,22 @@ function ProductDetail() {
           <img src={mainImage} alt={product.name} className={styles.productImage} />
         </div>
 
-        {/* Upload button */}
+        {/* Upload */}
         <div style={{ marginTop: 12 }}>
-          <input
-            type="file"
-            accept="image/*"
-            id="uploadInput"
-            style={{ display: "none" }}
-            onChange={(e) => setNewImage(e.target.files[0] || null)}
-          />
-
+          <input type="file" accept="image/*" id="uploadInput" style={{ display: "none" }} onChange={(e) => setNewImage(e.target.files[0] || null)} />
           <button
-            onClick={() => {
-              if (!newImage) document.getElementById("uploadInput").click();
-              else handleUpload();
-            }}
+            onClick={() => (!newImage ? document.getElementById("uploadInput").click() : handleUpload())}
             disabled={uploading}
             className={styles.uploadBtn}
           >
-            {/* Icon SVG background */}
             <span></span>
-            {uploading
-              ? "Uploading..."
-              : !newImage
-                ? "Add image"
-                : "Upload"}
+            {uploading ? "Uploading..." : !newImage ? "Add image" : "Upload"}
           </button>
           {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
         </div>
       </div>
 
-      {/* Bên phải */}
+      {/* Right */}
       <div className={styles.right}>
         <div className={styles.breadcrumb}>
           <Link to="/" className={styles.breadcrumbLink}>HOME</Link> /{" "}
@@ -171,27 +139,85 @@ function ProductDetail() {
         <h1 className={styles.productName}>{product.name}</h1>
 
         <div className={styles.priceSection}>
-          <span className={styles.currentPrice}>{product.unit_price} VND</span>
+          <span className={styles.currentPrice}>${product.unit_price} USD</span>
         </div>
 
-        <p className={styles.shortDescription}>{product.short_description || "Short description"}</p>
+        {/* Rating */}
+        {product.rating && (
+          <div className={styles.rating}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span key={star} className={styles.star} style={{ color: star <= product.rating ? "#f1c40f" : "#ccc" }}>
+                ★
+              </span>
+            ))}
+            <button className={styles.reviewBtn} onClick={() => setShowReview(true)}>Rating</button>
+          </div>
+        )}
 
+        {/* Description */}
+        {product.description && (
+          <div className={styles.productDescription}>
+            <h3>Product Description</h3>
+            <p>{product.description}</p>
+          </div>
+        )}
+
+        {/* Quantity control */}
         <div className={styles.orderControl}>
           <button onClick={decrement} className={styles.qtyBtn}>-</button>
           <span className={styles.qty}>{quantity}</span>
           <button onClick={increment} className={styles.qtyBtn}>+</button>
         </div>
 
+        {/* Action buttons */}
         <div className={styles.actionButtons}>
           <button className={styles.addToCartBtn} onClick={handleAddToCart}>Add to Cart</button>
           <button className={styles.buyNowBtn} onClick={handleBuyNow}>Buy Now</button>
         </div>
 
         <div className={styles.productMeta}>
-          <p>📦 Quantity in stock: {product.quantity}</p>
-          <p>⚠ Threshold: {product.threshold}</p>
+          <p className={styles.quantity}>📦 Quantity in stock: {product.quantity}</p>
+          <p className={styles.threshold}>⚠ Threshold: {product.threshold}</p>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {showReview && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Write your review</h3>
+
+            <div>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  style={{ cursor: "pointer", fontSize: "22px", color: star <= reviewRating ? "#f1c40f" : "#ccc" }}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+
+            <textarea
+              className={styles.reviewTextarea}
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Enter your comment..."
+            />
+
+            <div className={styles.modalActions}>
+              <button className={styles.cancelBtn} onClick={() => setShowReview(false)}>Cancel</button>
+              <button className={styles.submitBtn} onClick={() => {
+                console.log("Submitted review:", { rating: reviewRating, comment: reviewText });
+                setShowReview(false);
+                setReviewRating(0);
+                setReviewText("");
+              }}>Submit Review</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

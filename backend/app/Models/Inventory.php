@@ -14,7 +14,9 @@ class Inventory extends Model
         'threshold',
         'unit_price',
         'type',
-        'image'
+        'image',
+        'description',
+        'rating'
     ];
 
     // Cho phép tự động append image_url vào JSON response

@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 function ProductList() {
   const [products, setProducts] = useState([]);
   const [selectedType, setSelectedType] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // số sản phẩm mỗi trang
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,10 +19,21 @@ function ProductList() {
       .catch((err) => console.error("Error fetching products:", err));
   }, []);
 
+  // Lọc sản phẩm theo loại
   const filteredProducts =
     selectedType === "All"
       ? products
       : products.filter((p) => p.type === selectedType);
+
+  // Tính số trang
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  // Cắt mảng theo trang
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   return (
     <div>
@@ -28,7 +41,10 @@ function ProductList() {
       <div className={styles.filterBar}>
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={(e) => {
+            setSelectedType(e.target.value);
+            setCurrentPage(1); // reset về trang 1 khi đổi filter
+          }}
         >
           <option value="All">ALL PRODUCT</option>
           <option value="COS">COSMETICS</option>
@@ -39,7 +55,7 @@ function ProductList() {
 
       {/* Danh sách sản phẩm */}
       <div className={styles.hotelList}>
-        {filteredProducts.map((p) => (
+        {currentProducts.map((p) => (
           <div className={styles.hotelCard} key={p.item_id}>
             <div
               className={styles.imgContainer}
@@ -70,6 +86,23 @@ function ProductList() {
           </div>
         ))}
       </div>
+
+      {/* Phân trang */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              className={`${styles.pageBtn} ${
+                page === currentPage ? styles.activePage : ""
+              }`}
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
