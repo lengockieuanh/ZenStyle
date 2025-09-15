@@ -30,6 +30,7 @@ class AppointmentController extends Controller
             'client_id' => 'required|exists:clients,id',
             'user_id' => 'required|exists:users,id',
             'service_id' => 'required|exists:services,id',
+            'room' => 'nullable|int|max:11',
             'appointment_time' => 'required|date|after:now',
             'status' => 'in:booked,cancelled,rescheduled',
         ]);

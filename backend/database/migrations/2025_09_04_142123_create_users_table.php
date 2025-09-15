@@ -16,12 +16,13 @@ return new class extends Migration
     $table->string('name');
     $table->string('email')->unique();
     $table->string('password');
+    $table->string('phone')->nullable();
     $table->enum('role', ['admin','receptionist','stylist','client'])->default('client');
     $table->rememberToken();
     $table->timestamps();
 });
 
-        
+
     }
 
     /**

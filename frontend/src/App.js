@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import ReceptionistDashboard from "./pages/dashboard/ReceptionistDashboard";
 import StylistDashboard from "./pages/dashboard/StylistDashboard";
 
+
 function App() {
   return (
     <BrowserRouter>

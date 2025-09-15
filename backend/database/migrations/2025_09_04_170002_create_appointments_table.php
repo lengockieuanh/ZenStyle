@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('appointments', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-    $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // stylist/receptionist
-    $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
-    $table->dateTime('appointment_time');
-    $table->enum('status', ['booked','cancelled','rescheduled','completed'])->default('booked');
-    $table->timestamps();
-});
-
+            $table->id();
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // stylist/receptionist
+            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
+            $table->dateTime('appointment_time');
+            $table->string('room')->nullable(); // phòng
+            $table->enum('status', ['booked', 'cancelled', 'rescheduled', 'completed'])->default('booked');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -28,6 +28,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appointments');
+        Schema::table('appointments', function (Blueprint $table) {
+            
+        });
     }
 };

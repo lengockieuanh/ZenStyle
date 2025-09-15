@@ -10,7 +10,7 @@ class Service extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name','description','duration_minutes','price'
+        'name','description','duration_minutes','price', 'role'
     ];
 
     public function appointments() {

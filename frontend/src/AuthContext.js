@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   const redirectByRole = (role) => {
     switch (role) {
       case "client":
-        navigate("/price");
+        navigate("/");
         break;
       case "admin":
         navigate("/dashboard/admin");
@@ -47,6 +47,7 @@ export function AuthProvider({ children }) {
 
     redirectByRole(data.user.role);
   };
+  
 
   const logout = () => {
     localStorage.removeItem("token");

@@ -165,15 +165,15 @@ export default function Login() {
             {loading ? "Logging in..." : "Log in"}
           </button>
 
-          <div className="text-center my-3">Log in with the booking number</div>
+          {/* <div className="text-center my-3">Log in with the booking number</div> */}
 
-          <p className="small text-muted mb-0">
+          {/* <p className="small text-muted mb-0">
             By logging in or signing up, you give your{" "}
             <a href="#!">Consent to personal data processing</a> and confirm
             that you have read the{" "}
             <a href="#!">Online booking rules</a> and{" "}
             <a href="#!">Privacy policy</a>.
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
