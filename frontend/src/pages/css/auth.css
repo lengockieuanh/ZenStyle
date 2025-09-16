@@ -21,3 +21,6 @@
   width:100%; text-align:left; background:#fff; border:0; padding:.5rem .75rem;
 }
 .auth-country-menu li button:hover { background:#f6f6f6; }
+body{
+  background-color: rgb(234, 234, 234);
+}
