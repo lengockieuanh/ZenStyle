@@ -10,20 +10,20 @@ class FeedbackController extends Controller
 {
     // GET /api/feedbacks?item_id=1
     public function index(Request $request)
-    {
-        $itemId = $request->query('item_id');
+{
+    $itemId = $request->query('item_id');
 
-        if (!$itemId) {
-            return response()->json(['message' => 'item_id is required'], 400);
-        }
-
-        $feedbacks = Feedback::where('item_id', $itemId)
-            ->with(['client:client_id,name', 'user:user_id,name'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($feedbacks);
+    if (!$itemId) {
+        return response()->json(['message' => 'item_id is required'], 400);
     }
+
+    $feedbacks = Feedback::where('item_id', $itemId)
+        ->with(['client:client_id,name', 'user:user_id,name,role']) // Thêm role
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json($feedbacks);
+}
 
     // POST /api/feedbacks
     public function store(Request $request)
@@ -56,11 +56,12 @@ class FeedbackController extends Controller
         $feedback = Feedback::create($feedbackData);
 
         // Load relationship tương ứng
-        $relationship = isset($feedbackData['user_id']) ? 'user:user_id,name' : 'client:client_id,name';
-        
-        return response()->json([
-            'message' => 'Feedback submitted successfully',
-            'data' => $feedback->load($relationship),
-        ], 201);
+       // Load relationship tương ứng
+$relationship = isset($feedbackData['user_id']) ? 'user:user_id,name,role' : 'client:client_id,name';
+
+return response()->json([
+    'message' => 'Feedback submitted successfully',
+    'data' => $feedback->load($relationship),
+], 201);
     }
 }

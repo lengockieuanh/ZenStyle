@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->enum('type', ['COS', 'SHAMP', 'GEL']);
             $table->string('image')->nullable();
             $table->text('description')->nullable();
-            $table->unsignedTinyInteger('rating')->default(0);
             $table->timestamps();
         });
     }

@@ -38,12 +38,12 @@ function ProductDetail() {
 
   // Load feedbacks
   const loadFeedbacks = useCallback(() => {
-  if (!product?.item_id) return;
-  fetch(`http://127.0.0.1:8000/api/feedbacks?item_id=${product.item_id}`)
-    .then((res) => res.json())
-    .then((data) => setFeedbacks(data))
-    .catch((err) => console.error(err));
-}, [product?.item_id]);
+    if (!product?.item_id) return;
+    fetch(`http://127.0.0.1:8000/api/feedbacks?item_id=${product.item_id}`)
+      .then((res) => res.json())
+      .then((data) => setFeedbacks(data))
+      .catch((err) => console.error(err));
+  }, [product?.item_id]);
 
   useEffect(() => {
     loadProduct();
@@ -129,225 +129,279 @@ function ProductDetail() {
   };
 
   // Submit review
- const handleSubmitReview = async () => {
-  const token = localStorage.getItem('auth_token');
-  if (!token) {
-    alert("Bạn cần đăng nhập để có thể đánh giá sản phẩm!");
-    return;
-  }
-
-  // Debug logs
-  console.log("=== DEBUG PRODUCT DATA ===");
-  console.log("Full product object:", product);
-  console.log("product.item_id:", product.item_id);
-  console.log("URL param id:", id);
-  console.log("typeof product.item_id:", typeof product.item_id);
-
-  try {
-    const requestData = {
-      item_id: product.item_id,
-      rating: reviewRating,
-      comments: reviewText,
-    };
-
-    console.log("=== DEBUG REQUEST DATA ===");
-    console.log("Request payload:", requestData);
-
-    // Kiểm tra item_id có giá trị không
-    if (!requestData.item_id) {
-      console.error("ERROR: item_id is missing!");
-      alert("Lỗi: Không tìm thấy ID sản phẩm");
+  const handleSubmitReview = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      alert("Bạn cần đăng nhập để có thể đánh giá sản phẩm!");
       return;
     }
 
-    const res = await fetch("http://127.0.0.1:8000/api/feedbacks", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify(requestData),
-    });
+    try {
+      const requestData = {
+        item_id: product.item_id,
+        rating: reviewRating,
+        comments: reviewText,
+      };
 
-    if (res.ok) {
-      alert("Feedback submitted successfully!");
-      setShowReview(false);
-      setReviewRating(0);
-      setReviewText("");
-      loadFeedbacks();
-    } else if (res.status === 401) {
-      alert("Bạn cần đăng nhập để gửi đánh giá!");
-    } else {
-      const errorData = await res.json();
-      alert("Error: " + (errorData.message || 'Submit failed'));
+      if (!requestData.item_id) {
+        alert("Lỗi: Không tìm thấy ID sản phẩm");
+        return;
+      }
+
+      const res = await fetch("http://127.0.0.1:8000/api/feedbacks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (res.ok) {
+        alert("Feedback submitted successfully!");
+        setShowReview(false);
+        setReviewRating(0);
+        setReviewText("");
+        loadFeedbacks();
+        loadProduct();
+      } else if (res.status === 401) {
+        alert("Bạn cần đăng nhập để gửi đánh giá!");
+      } else {
+        const errorData = await res.json();
+        alert("Error: " + (errorData.message || 'Submit failed'));
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Connection error: " + err.message);
     }
-  } catch (err) {
-    console.error("Error:", err);
-    alert("Connection error: " + err.message);
-  }
-};
-
-
+  };
 
   return (
-    <div className={styles.productDetail}>
-      {/* Left section */}
-      <div className={styles.left}>
-        {/* Thumbnails */}
-        <div className={styles.thumbnailList}>
-          {product.images?.map((img, index) => (
-            <div
-              key={index}
-              style={{ position: "relative", display: "inline-block" }}
-            >
-              <img
-                src={img.url}
-                alt={`Thumbnail ${index + 1}`}
-                className={`${styles.thumbnail} ${
-                  mainImage === img.url ? styles.active : ""
-                }`}
-                onClick={() => setMainImage(img.url)}
-              />
-              <button
-                className={styles.deleteBtn}
-                onClick={() => handleDelete(img.image_id, img.url)}
+    <>
+      {/* Main Product Section */}
+      <div className={styles.productDetail}>
+        {/* Left section */}
+        <div className={styles.left}>
+          {/* Thumbnails */}
+          <div className={styles.thumbnailList}>
+            {product.images?.map((img, index) => (
+              <div
+                key={index}
+                style={{ position: "relative", display: "inline-block" }}
               >
-                <span></span>
-              </button>
+                <img
+                  src={img.url}
+                  alt={`Thumbnail ${index + 1}`}
+                  className={`${styles.thumbnail} ${
+                    mainImage === img.url ? styles.active : ""
+                  }`}
+                  onClick={() => setMainImage(img.url)}
+                />
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => handleDelete(img.image_id, img.url)}
+                >
+                  <span></span>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Main image */}
+          <div className={styles.mainImageContainer}>
+            <img
+              src={mainImage}
+              alt={product.name}
+              className={styles.productImage}
+            />
+          </div>
+
+          {/* Upload */}
+          <div style={{ marginTop: 12 }}>
+            <input
+              type="file"
+              accept="image/*"
+              id="uploadInput"
+              style={{ display: "none" }}
+              onChange={(e) => setNewImage(e.target.files[0] || null)}
+            />
+            <button
+              onClick={() =>
+                !newImage
+                  ? document.getElementById("uploadInput").click()
+                  : handleUpload()
+              }
+              disabled={uploading}
+              className={styles.uploadBtn}
+            >
+              <span></span>
+              {uploading ? "Uploading..." : !newImage ? "Add image" : "Upload"}
+            </button>
+            {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+          </div>
+        </div>
+
+        {/* Right section */}
+        <div className={styles.right}>
+          <div className={styles.breadcrumb}>
+            <Link to="/" className={styles.breadcrumbLink}>
+              HOME
+            </Link>{" "}
+            /{" "}
+            <Link to="/products" className={styles.breadcrumbLink}>
+              PRODUCT
+            </Link>
+          </div>
+
+          <h1 className={styles.productName}>{product.name}</h1>
+
+          <div className={styles.priceSection}>
+            <span className={styles.currentPrice}>${product.unit_price} USD</span>
+          </div>
+
+          {/* Rating display */}
+          <div className={styles.rating}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span
+                key={star}
+                className={styles.star}
+                style={{ color: star <= product.average_rating ? "#f1c40f" : "#ccc" }}
+              >
+                ★
+              </span>
+            ))}
+            <button
+              className={styles.reviewBtn}
+              onClick={() => setShowReview(true)}
+            >
+              Rating
+            </button>
+          </div>
+
+          {/* Description */}
+          {product.description && (
+            <div className={styles.productDescription}>
+              <h3>Product Description</h3>
+              <p>{product.description}</p>
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Main image */}
-        <div className={styles.mainImageContainer}>
-          <img
-            src={mainImage}
-            alt={product.name}
-            className={styles.productImage}
-          />
-        </div>
+          {/* Quantity control */}
+          <div className={styles.orderControl}>
+            <button onClick={decrement} className={styles.qtyBtn}>
+              -
+            </button>
+            <span className={styles.qty}>{quantity}</span>
+            <button onClick={increment} className={styles.qtyBtn}>
+              +
+            </button>
+          </div>
 
-        {/* Upload */}
-        <div style={{ marginTop: 12 }}>
-          <input
-            type="file"
-            accept="image/*"
-            id="uploadInput"
-            style={{ display: "none" }}
-            onChange={(e) => setNewImage(e.target.files[0] || null)}
-          />
-          <button
-            onClick={() =>
-              !newImage
-                ? document.getElementById("uploadInput").click()
-                : handleUpload()
-            }
-            disabled={uploading}
-            className={styles.uploadBtn}
-          >
-            <span></span>
-            {uploading ? "Uploading..." : !newImage ? "Add image" : "Upload"}
-          </button>
-          {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+          {/* Action buttons */}
+          <div className={styles.actionButtons}>
+            <button className={styles.addToCartBtn} onClick={handleAddToCart}>
+              Add to Cart
+            </button>
+            <button className={styles.buyNowBtn} onClick={handleBuyNow}>
+              Buy Now
+            </button>
+          </div>
+
+          <div className={styles.productMeta}>
+            <p className={styles.quantity}>
+              📦 Quantity in stock: {product.quantity}
+            </p>
+            <p className={styles.threshold}>⚠ Threshold: {product.threshold}</p>
+          </div>
         </div>
       </div>
 
-      {/* Right section */}
-      <div className={styles.right}>
-        <div className={styles.breadcrumb}>
-          <Link to="/" className={styles.breadcrumbLink}>
-            HOME
-          </Link>{" "}
-          /{" "}
-          <Link to="/products" className={styles.breadcrumbLink}>
-            PRODUCT
-          </Link>
-        </div>
-
-        <h1 className={styles.productName}>{product.name}</h1>
-
-        <div className={styles.priceSection}>
-          <span className={styles.currentPrice}>${product.unit_price} USD</span>
-        </div>
-
-        {/* Rating */}
-        <div className={styles.rating}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <span
-              key={star}
-              className={styles.star}
-              style={{ color: star <= product.rating ? "#f1c40f" : "#ccc" }}
-            >
-              ★
-            </span>
-          ))}
-          <button
-            className={styles.reviewBtn}
-            onClick={() => setShowReview(true)}
-          >
-            Rating
-          </button>
-        </div>
-
-        {/* Description */}
-        {product.description && (
-          <div className={styles.productDescription}>
-            <h3>Product Description</h3>
-            <p>{product.description}</p>
-          </div>
-        )}
-
-        {/* Feedback list */}
+      {/* Customer Reviews Section - Separate section below main content */}
+      <div style={{ 
+        width: '100%', 
+        maxWidth: '1200px', 
+        margin: '40px auto',
+        padding: '0 20px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        padding: '30px'
+      }}>
         <div className={styles.feedbackSection}>
-          <h3>Customer Reviews</h3>
+          <h2 style={{ 
+            textAlign: 'center', 
+            marginBottom: '30px',
+            color: '#333',
+            fontSize: '28px'
+          }}>
+            Customer Reviews
+          </h2>
+          
           {feedbacks.length === 0 ? (
-            <p>No reviews yet.</p>
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px',
+              color: '#666',
+              fontSize: '16px'
+            }}>
+              <p>No reviews yet. Be the first to review this product!</p>
+            </div>
           ) : (
-            feedbacks.map((fb, index) => (
-              <div key={index} className={styles.feedbackItem}>
-                <div>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      style={{ color: star <= fb.rating ? "#f1c40f" : "#ccc" }}
-                    >
-                      ★
-                    </span>
-                  ))}
+            <div style={{ 
+              display: 'grid',
+              gap: '20px',
+              maxWidth: '800px',
+              margin: '0 auto'
+            }}>
+              {feedbacks.map((fb, index) => (
+                <div 
+                  key={index} 
+                  style={{
+                    backgroundColor: 'white',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    border: '1px solid #e0e0e0'
+                  }}
+                  className={styles.feedbackItem}
+                >
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px'
+                  }}>
+                    <div>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          style={{ 
+                            color: star <= fb.rating ? "#f1c40f" : "#ccc",
+                            fontSize: '18px',
+                            marginRight: '2px'
+                          }}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                     {fb.user && <span>by {fb.user.name} ({fb.user.role})</span>}
+                      {fb.client && <span>by {fb.client.name}</span>}
+                    </div>
+                  </div>
+                  <p style={{ 
+                    margin: '0', 
+                    fontSize: '15px', 
+                    lineHeight: '1.6',
+                    color: '#333'
+                  }}>
+                    {fb.comments}
+                  </p>
                 </div>
-                <p>{fb.comments}</p>
-              </div>
-            ))
+              ))}
+            </div>
           )}
-        </div>
-
-        {/* Quantity control */}
-        <div className={styles.orderControl}>
-          <button onClick={decrement} className={styles.qtyBtn}>
-            -
-          </button>
-          <span className={styles.qty}>{quantity}</span>
-          <button onClick={increment} className={styles.qtyBtn}>
-            +
-          </button>
-        </div>
-
-        {/* Action buttons */}
-        <div className={styles.actionButtons}>
-          <button className={styles.addToCartBtn} onClick={handleAddToCart}>
-            Add to Cart
-          </button>
-          <button className={styles.buyNowBtn} onClick={handleBuyNow}>
-            Buy Now
-          </button>
-        </div>
-
-        <div className={styles.productMeta}>
-          <p className={styles.quantity}>
-            📦 Quantity in stock: {product.quantity}
-          </p>
-          <p className={styles.threshold}>⚠ Threshold: {product.threshold}</p>
         </div>
       </div>
 
@@ -394,7 +448,7 @@ function ProductDetail() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

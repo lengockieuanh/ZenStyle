@@ -12,21 +12,14 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Products API
+// Products API (public)
 Route::apiResource('products', InventoryController::class)->only([
     'index', 'show', 'store', 'update', 'destroy'
-]);
-
-// Orders API
-Route::apiResource('orders', OrderController::class)->only([
-    'index', 'show', 'store'
 ]);
 
 // Product images
 Route::post('products/{id}/images', [InventoryController::class, 'addImage']);
 Route::delete('products/{id}/images/{imageId}', [InventoryController::class, 'deleteImage']);
-
-
 
 // User authentication (cho nhân viên)
 Route::prefix('user')->group(function () {
@@ -50,6 +43,16 @@ Route::prefix('client')->group(function () {
     });
 });
 
-// Feedback chỉ cho client
+// Protected routes - require authentication
+Route::middleware('auth:sanctum')->group(function () {
+    // Orders API
+    Route::apiResource('orders', OrderController::class)->only([
+        'index', 'show', 'store'
+    ]);
+    
+    // Feedbacks
+    Route::post('feedbacks', [FeedbackController::class, 'store']);
+});
+
+// Public routes
 Route::get('feedbacks', [FeedbackController::class, 'index']);
-Route::middleware('auth:sanctum')->post('feedbacks', [FeedbackController::class, 'store']);

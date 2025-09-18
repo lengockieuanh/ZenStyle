@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./css/Checkout.module.css";
-
+import { useRef } from "react";
 function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -10,8 +10,20 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
+  const authChecked = useRef(false);
+  // Check authentication
+  useEffect(() => {
+    if (authChecked.current) return;
 
-  // Nếu product chưa đầy đủ (chỉ có item_id từ ProductList), fetch thêm thông tin chi tiết
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      authChecked.current = true;
+      alert("Bạn cần đăng nhập để thanh toán!");
+      navigate("/login");
+      return;
+    }
+    authChecked.current = true;
+  }, [navigate]);
   useEffect(() => {
     if (product && !product.images) {
       fetch(`http://127.0.0.1:8000/api/products/${product.item_id}`)
@@ -21,14 +33,25 @@ function Checkout() {
     }
   }, [product]);
 
-  if (!product) return <p>No product in cart!</p>;
-
-  const client_id = 1; // ví dụ
-  const user_id = null;
+  if (!product || !quantity) {
+    return (
+      <div className={styles.checkoutWrapper}>
+        <p>No product in cart!</p>
+        <button onClick={() => navigate("/products")}>Back to Products</button>
+      </div>
+    );
+  }
 
   const handleConfirmPayment = async () => {
     if (!email) {
       setMessage("Vui lòng nhập email để nhận hóa đơn");
+      return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      alert("Phiên đăng nhập đã hết hạn!");
+      navigate("/login");
       return;
     }
 
@@ -38,12 +61,17 @@ function Checkout() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
-          client_id,
-          user_id,
           email,
-          items: [{ item_id: product.item_id, quantity, price: product.unit_price }],
+          items: [{
+            item_id: product.item_id,
+            quantity,
+            price: product.unit_price
+          }],
           payment_method: "cash",
         }),
       });
@@ -51,7 +79,7 @@ function Checkout() {
       const data = await response.json();
       if (response.ok) {
         setMessage("Order successfully created! Order ID: " + data.order.order_id);
-        setTimeout(() => navigate("/products"), 500);
+        setTimeout(() => navigate("/products"), 2000);
       } else {
         setMessage("Error: " + (data.message || "Something went wrong"));
       }
@@ -63,24 +91,23 @@ function Checkout() {
     }
   };
 
-  // Lấy ảnh chính: ưu tiên ảnh phụ đầu tiên, nếu không có thì ảnh chính
-  const productImage =
-    product.images && product.images.length > 0
-      ? product.images[0].url
-      : product.image_url || "/assets/img/default.jpg";
+  // Get product image
+  const productImage = product.images && product.images.length > 0
+    ? product.images[0].url
+    : product.image_url || "/assets/img/default.jpg";
 
   return (
     <div className={styles.checkoutWrapper}>
-      <h1>Checkout</h1>
+      <h1>Confirm Order</h1>
       <div className={styles.checkoutContainer}>
         <div className={styles.checkoutImage}>
           <img src={productImage} alt={product.name} />
         </div>
         <div className={styles.checkoutInfo}>
           <h2>{product.name}</h2>
-          <p>Price: {product.unit_price} VND</p>
+          <p>Price: {product.unit_price} USD</p>
           <p>Quantity: {quantity}</p>
-          <p>Total: {product.unit_price * quantity} VND</p>
+          <p>Total: {product.unit_price * quantity} USD</p>
 
           <div style={{ marginBottom: "10px" }}>
             <label>Email nhận hóa đơn:</label>

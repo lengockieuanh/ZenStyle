@@ -413,3 +413,135 @@
   border-color: #3498db; /* xanh khi focus */
   box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
 }
+
+
+/* Mobile responsive - sửa lại hoàn toàn */
+@media (max-width: 768px) {
+  .productDetail {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 15px;
+    align-items: center; /* Căn giữa toàn bộ container */
+  }
+  
+  .left {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 350px;
+  }
+  
+  .thumbnailList {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    order: 2;
+    margin-top: 15px;
+  }
+  
+  .thumbnail {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mainImageContainer {
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+    order: 1;
+  }
+  
+  .productImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  
+  .uploadBtn {
+    order: 3;
+    margin-top: 15px;
+  }
+  
+  .right {
+    width: 100%;
+    max-width: 350px; /* Giới hạn width */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Căn giữa tất cả elements */
+  }
+  
+  .breadcrumb {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  
+  .productName {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  
+  .priceSection {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  
+  .rating {
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  
+  .productDescription {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .orderControl {
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .addToCartBtn,
+  .buyNowBtn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .productMeta {
+    text-align: center;
+    margin-top: 20px;
+  }
+}
+
+/* Tablet responsive */
+@media (max-width: 1024px) {
+  .productDetail {
+    gap: 30px;
+    padding: 30px 15px;
+  }
+  
+  .mainImageContainer {
+    width: 350px;
+    height: 350px;
+  }
+  
+  .right {
+    width: 45%;
+  }
+}
+
+/* Reviews section responsive */
+@media (max-width: 768px) {
+  /* Cho phần reviews ở dưới */
+  .feedbackSection {
+    padding: 20px 15px !important;
+    margin: 20px auto !important;
+  }
+}

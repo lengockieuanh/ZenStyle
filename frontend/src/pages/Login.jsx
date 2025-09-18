@@ -30,8 +30,6 @@ export default function Login() {
   // Try login with both User and Client APIs
   const attemptLogin = async (apiEndpoint, loginData, userType) => {
     try {
-      console.log(`Trying ${userType} login:`, loginData);
-
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
@@ -44,16 +42,6 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Successful login
-        localStorage.setItem('auth_token', data.access_token);
-        localStorage.setItem('user_type', userType);
-        
-        if (userType === 'user') {
-          localStorage.setItem('user_data', JSON.stringify(data.user));
-        } else {
-          localStorage.setItem('client_data', JSON.stringify(data.client));
-        }
-
         return { success: true, data, userType };
       } else {
         return { success: false, status: response.status, message: data.message };
@@ -64,67 +52,73 @@ export default function Login() {
   };
 
   const submit = async (e) => {
-  e.preventDefault();
-  if (!validate()) return;
+    e.preventDefault();
+    if (!validate()) return;
 
-  setLoading(true);
-  setErrors({});
+    setLoading(true);
+    setErrors({});
 
-  try {
-    const loginData = tab === "email" 
-      ? { email: form.email, password: form.password }
-      : { phone: form.phone, password: form.password };
+    try {
+      const loginData = tab === "email"
+        ? { email: form.email, password: form.password }
+        : { phone: form.phone, password: form.password };
 
-    // Try Client login first
-    const clientResult = await attemptLogin(
-      'http://127.0.0.1:8000/api/client/login', 
-      loginData, 
-      'client'
-    );
+      // Try Client login first
+      const clientResult = await attemptLogin(
+        'http://127.0.0.1:8000/api/client/login',
+        loginData,
+        'client'
+      );
 
-    if (clientResult.success) {
-      localStorage.setItem('auth_token', clientResult.data.access_token);
-      localStorage.setItem('user_type', 'client');
-      localStorage.setItem('client_data', JSON.stringify(clientResult.data.client));
-      
-      alert(`Chào mừng khách hàng: ${clientResult.data.client.name}!`);
-      window.location.href = "/";
-      return;
+      if (clientResult.success) {
+        localStorage.setItem('auth_token', clientResult.data.access_token);
+        localStorage.setItem('user_type', 'client');
+        localStorage.setItem('client_data', JSON.stringify(clientResult.data.client));
+
+        // Trigger auth change event
+        window.dispatchEvent(new Event('auth-change'));
+
+        alert(`Chào mừng khách hàng: ${clientResult.data.client.name}!`);
+        navigate("/"); // dùng navigate thay cho window.location.href
+        return;
+      }
+
+
+      // If Client login fails, try User login
+      const userResult = await attemptLogin(
+        'http://127.0.0.1:8000/api/user/login',
+        loginData,
+        'user'
+      );
+
+      if (userResult.success) {
+        localStorage.setItem('auth_token', userResult.data.access_token);
+        localStorage.setItem('user_type', 'user');
+        localStorage.setItem('user_data', JSON.stringify(userResult.data.user));
+
+        window.dispatchEvent(new Event('auth-change'));
+
+        alert(`Chào mừng nhân viên: ${userResult.data.user.name} (${userResult.data.user.role})!`);
+        navigate("/"); // Cũng nên đổi từ window.location.href
+        return;
+      }
+
+      // Both failed - show error
+      if (clientResult.status === 401 && userResult.status === 401) {
+        setErrors({ general: "Email/Phone hoặc mật khẩu không đúng" });
+      } else if (clientResult.error || userResult.error) {
+        setErrors({ general: "Lỗi kết nối. Vui lòng thử lại." });
+      } else {
+        setErrors({ general: "Đăng nhập thất bại" });
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrors({ general: "Lỗi hệ thống. Vui lòng thử lại." });
+    } finally {
+      setLoading(false);
     }
-
-    // If Client login fails, try User login
-    const userResult = await attemptLogin(
-      'http://127.0.0.1:8000/api/user/login', 
-      loginData, 
-      'user'
-    );
-
-    if (userResult.success) {
-      localStorage.setItem('auth_token', userResult.data.access_token);
-      localStorage.setItem('user_type', 'user');
-      localStorage.setItem('user_data', JSON.stringify(userResult.data.user));
-      
-      alert(`Chào mừng nhân viên: ${userResult.data.user.name} (${userResult.data.user.role})!`);
-      window.location.href = "/";
-      return;
-    }
-
-    // Both failed - show error
-    if (clientResult.status === 401 && userResult.status === 401) {
-      setErrors({ general: "Email/Phone hoặc mật khẩu không đúng" });
-    } else if (clientResult.error || userResult.error) {
-      setErrors({ general: "Lỗi kết nối. Vui lòng thử lại." });
-    } else {
-      setErrors({ general: "Đăng nhập thất bại" });
-    }
-
-  } catch (error) {
-    console.error("Login error:", error);
-    setErrors({ general: "Lỗi hệ thống. Vui lòng thử lại." });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   return (
     <div className="container py-5">
       <div className="auth-card card p-4 p-md-5">
