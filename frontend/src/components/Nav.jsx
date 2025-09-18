@@ -1,8 +1,16 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const { isAuthenticated, user, userType, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    // Có thể reload trang hoặc redirect
+    window.location.href = "/";
+  };
 
   return (
     <div className="container-fluid bg-light sticky-top p-0">
@@ -14,8 +22,18 @@ export default function Nav() {
         <div className="navbar-nav mx-auto"></div>
 
         <div className="d-flex ms-lg-3 gap-2">
-          <Link to="/login" className="btn btn-outline-primary">Log in</Link>
-          {/* <Link to="/signup" className="btn btn-primary">Sign up</Link> */}
+          {isAuthenticated ? (
+            <div className="d-flex align-items-center gap-2">
+              <span className="text-primary">
+                Hello, {user?.name} {userType === 'user' && `(${user?.role})`}
+              </span>
+              <button className="btn btn-outline-danger" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="btn btn-outline-primary">Log in</Link>
+          )}
         </div>
 
         <button type="button" className="navbar-toggler me-4" onClick={() => setOpen(!open)}>

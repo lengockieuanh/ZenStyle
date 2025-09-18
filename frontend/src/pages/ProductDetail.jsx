@@ -5,23 +5,30 @@ import styles from "./css/ProductDetail.module.css";
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState("");
   const [newImage, setNewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Review state
   const [showReview, setShowReview] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [feedbacks, setFeedbacks] = useState([]);
 
+  // Load product
   const loadProduct = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);
         if (data.images && data.images.length > 0) {
-          setMainImage((prev) => (prev && prev !== "" ? prev : data.images[0].url));
+          setMainImage((prev) =>
+            prev && prev !== "" ? prev : data.images[0].url
+          );
         } else {
           setMainImage(data.image_url || "/assets/img/default.jpg");
         }
@@ -29,17 +36,36 @@ function ProductDetail() {
       .catch((err) => console.error(err));
   }, [id]);
 
+  // Load feedbacks
+  const loadFeedbacks = useCallback(() => {
+  if (!product?.item_id) return;
+  fetch(`http://127.0.0.1:8000/api/feedbacks?item_id=${product.item_id}`)
+    .then((res) => res.json())
+    .then((data) => setFeedbacks(data))
+    .catch((err) => console.error(err));
+}, [product?.item_id]);
+
   useEffect(() => {
     loadProduct();
   }, [loadProduct]);
 
+  useEffect(() => {
+    loadFeedbacks();
+  }, [loadFeedbacks]);
+
   if (!product) return <p>Loading...</p>;
 
+  // Quantity
   const increment = () => setQuantity((q) => q + 1);
   const decrement = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
-  const handleAddToCart = () => navigate("/checkout", { state: { product, quantity } });
-  const handleBuyNow = () => navigate("/checkout", { state: { product, quantity } });
 
+  // Cart
+  const handleAddToCart = () =>
+    navigate("/checkout", { state: { product, quantity } });
+  const handleBuyNow = () =>
+    navigate("/checkout", { state: { product, quantity } });
+
+  // Upload image
   const handleUpload = async () => {
     setError(null);
     setUploading(true);
@@ -47,7 +73,13 @@ function ProductDetail() {
       const formData = new FormData();
       formData.append("image", newImage);
 
-      const res = await fetch(`http://127.0.0.1:8000/api/products/${id}/images`, { method: "POST", body: formData });
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/products/${id}/images`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -64,11 +96,17 @@ function ProductDetail() {
     }
   };
 
+  // Delete image
   const handleDelete = async (imageId, imageUrl) => {
     if (!window.confirm("Are you sure you want to delete this image?")) return;
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/products/${id}/images/${imageId}`, { method: "DELETE" });
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/products/${id}/images/${imageId}`,
+        {
+          method: "DELETE",
+        }
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -79,7 +117,9 @@ function ProductDetail() {
         }
         setProduct((p) => ({
           ...p,
-          images: p.images ? p.images.filter((i) => i.image_id !== imageId) : [],
+          images: p.images
+            ? p.images.filter((i) => i.image_id !== imageId)
+            : [],
         }));
       }
     } catch (err) {
@@ -88,21 +128,91 @@ function ProductDetail() {
     }
   };
 
+  // Submit review
+ const handleSubmitReview = async () => {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    alert("Bạn cần đăng nhập để có thể đánh giá sản phẩm!");
+    return;
+  }
+
+  // Debug logs
+  console.log("=== DEBUG PRODUCT DATA ===");
+  console.log("Full product object:", product);
+  console.log("product.item_id:", product.item_id);
+  console.log("URL param id:", id);
+  console.log("typeof product.item_id:", typeof product.item_id);
+
+  try {
+    const requestData = {
+      item_id: product.item_id,
+      rating: reviewRating,
+      comments: reviewText,
+    };
+
+    console.log("=== DEBUG REQUEST DATA ===");
+    console.log("Request payload:", requestData);
+
+    // Kiểm tra item_id có giá trị không
+    if (!requestData.item_id) {
+      console.error("ERROR: item_id is missing!");
+      alert("Lỗi: Không tìm thấy ID sản phẩm");
+      return;
+    }
+
+    const res = await fetch("http://127.0.0.1:8000/api/feedbacks", {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (res.ok) {
+      alert("Feedback submitted successfully!");
+      setShowReview(false);
+      setReviewRating(0);
+      setReviewText("");
+      loadFeedbacks();
+    } else if (res.status === 401) {
+      alert("Bạn cần đăng nhập để gửi đánh giá!");
+    } else {
+      const errorData = await res.json();
+      alert("Error: " + (errorData.message || 'Submit failed'));
+    }
+  } catch (err) {
+    console.error("Error:", err);
+    alert("Connection error: " + err.message);
+  }
+};
+
+
+
   return (
     <div className={styles.productDetail}>
-      {/* Left */}
+      {/* Left section */}
       <div className={styles.left}>
         {/* Thumbnails */}
         <div className={styles.thumbnailList}>
           {product.images?.map((img, index) => (
-            <div key={index} style={{ position: "relative", display: "inline-block" }}>
+            <div
+              key={index}
+              style={{ position: "relative", display: "inline-block" }}
+            >
               <img
                 src={img.url}
                 alt={`Thumbnail ${index + 1}`}
-                className={`${styles.thumbnail} ${mainImage === img.url ? styles.active : ""}`}
+                className={`${styles.thumbnail} ${
+                  mainImage === img.url ? styles.active : ""
+                }`}
                 onClick={() => setMainImage(img.url)}
               />
-              <button className={styles.deleteBtn} onClick={() => handleDelete(img.image_id, img.url)}>
+              <button
+                className={styles.deleteBtn}
+                onClick={() => handleDelete(img.image_id, img.url)}
+              >
                 <span></span>
               </button>
             </div>
@@ -111,14 +221,28 @@ function ProductDetail() {
 
         {/* Main image */}
         <div className={styles.mainImageContainer}>
-          <img src={mainImage} alt={product.name} className={styles.productImage} />
+          <img
+            src={mainImage}
+            alt={product.name}
+            className={styles.productImage}
+          />
         </div>
 
         {/* Upload */}
         <div style={{ marginTop: 12 }}>
-          <input type="file" accept="image/*" id="uploadInput" style={{ display: "none" }} onChange={(e) => setNewImage(e.target.files[0] || null)} />
+          <input
+            type="file"
+            accept="image/*"
+            id="uploadInput"
+            style={{ display: "none" }}
+            onChange={(e) => setNewImage(e.target.files[0] || null)}
+          />
           <button
-            onClick={() => (!newImage ? document.getElementById("uploadInput").click() : handleUpload())}
+            onClick={() =>
+              !newImage
+                ? document.getElementById("uploadInput").click()
+                : handleUpload()
+            }
             disabled={uploading}
             className={styles.uploadBtn}
           >
@@ -129,11 +253,16 @@ function ProductDetail() {
         </div>
       </div>
 
-      {/* Right */}
+      {/* Right section */}
       <div className={styles.right}>
         <div className={styles.breadcrumb}>
-          <Link to="/" className={styles.breadcrumbLink}>HOME</Link> /{" "}
-          <Link to="/products" className={styles.breadcrumbLink}>PRODUCT</Link>
+          <Link to="/" className={styles.breadcrumbLink}>
+            HOME
+          </Link>{" "}
+          /{" "}
+          <Link to="/products" className={styles.breadcrumbLink}>
+            PRODUCT
+          </Link>
         </div>
 
         <h1 className={styles.productName}>{product.name}</h1>
@@ -143,16 +272,23 @@ function ProductDetail() {
         </div>
 
         {/* Rating */}
-        {product.rating && (
-          <div className={styles.rating}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span key={star} className={styles.star} style={{ color: star <= product.rating ? "#f1c40f" : "#ccc" }}>
-                ★
-              </span>
-            ))}
-            <button className={styles.reviewBtn} onClick={() => setShowReview(true)}>Rating</button>
-          </div>
-        )}
+        <div className={styles.rating}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <span
+              key={star}
+              className={styles.star}
+              style={{ color: star <= product.rating ? "#f1c40f" : "#ccc" }}
+            >
+              ★
+            </span>
+          ))}
+          <button
+            className={styles.reviewBtn}
+            onClick={() => setShowReview(true)}
+          >
+            Rating
+          </button>
+        </div>
 
         {/* Description */}
         {product.description && (
@@ -162,21 +298,55 @@ function ProductDetail() {
           </div>
         )}
 
+        {/* Feedback list */}
+        <div className={styles.feedbackSection}>
+          <h3>Customer Reviews</h3>
+          {feedbacks.length === 0 ? (
+            <p>No reviews yet.</p>
+          ) : (
+            feedbacks.map((fb, index) => (
+              <div key={index} className={styles.feedbackItem}>
+                <div>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{ color: star <= fb.rating ? "#f1c40f" : "#ccc" }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <p>{fb.comments}</p>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Quantity control */}
         <div className={styles.orderControl}>
-          <button onClick={decrement} className={styles.qtyBtn}>-</button>
+          <button onClick={decrement} className={styles.qtyBtn}>
+            -
+          </button>
           <span className={styles.qty}>{quantity}</span>
-          <button onClick={increment} className={styles.qtyBtn}>+</button>
+          <button onClick={increment} className={styles.qtyBtn}>
+            +
+          </button>
         </div>
 
         {/* Action buttons */}
         <div className={styles.actionButtons}>
-          <button className={styles.addToCartBtn} onClick={handleAddToCart}>Add to Cart</button>
-          <button className={styles.buyNowBtn} onClick={handleBuyNow}>Buy Now</button>
+          <button className={styles.addToCartBtn} onClick={handleAddToCart}>
+            Add to Cart
+          </button>
+          <button className={styles.buyNowBtn} onClick={handleBuyNow}>
+            Buy Now
+          </button>
         </div>
 
         <div className={styles.productMeta}>
-          <p className={styles.quantity}>📦 Quantity in stock: {product.quantity}</p>
+          <p className={styles.quantity}>
+            📦 Quantity in stock: {product.quantity}
+          </p>
           <p className={styles.threshold}>⚠ Threshold: {product.threshold}</p>
         </div>
       </div>
@@ -192,7 +362,11 @@ function ProductDetail() {
                 <span
                   key={star}
                   onClick={() => setReviewRating(star)}
-                  style={{ cursor: "pointer", fontSize: "22px", color: star <= reviewRating ? "#f1c40f" : "#ccc" }}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "22px",
+                    color: star <= reviewRating ? "#f1c40f" : "#ccc",
+                  }}
                 >
                   ★
                 </span>
@@ -207,13 +381,15 @@ function ProductDetail() {
             />
 
             <div className={styles.modalActions}>
-              <button className={styles.cancelBtn} onClick={() => setShowReview(false)}>Cancel</button>
-              <button className={styles.submitBtn} onClick={() => {
-                console.log("Submitted review:", { rating: reviewRating, comment: reviewText });
-                setShowReview(false);
-                setReviewRating(0);
-                setReviewText("");
-              }}>Submit Review</button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setShowReview(false)}
+              >
+                Cancel
+              </button>
+              <button className={styles.submitBtn} onClick={handleSubmitReview}>
+                Submit Review
+              </button>
             </div>
           </div>
         </div>

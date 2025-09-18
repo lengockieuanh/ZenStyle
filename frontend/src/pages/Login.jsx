@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import "./css/auth.css"; // CSS ở bước 2
+import { Link, useNavigate } from "react-router-dom";
+import "./css/auth.css";
 
 export default function Login() {
-  const [tab, setTab] = useState("email"); // 'email' | 'phone'
+  const [tab, setTab] = useState("email");
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ email: "", phone: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -25,29 +27,115 @@ export default function Login() {
     return Object.keys(err).length === 0;
   };
 
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+  // Try login with both User and Client APIs
+  const attemptLogin = async (apiEndpoint, loginData, userType) => {
+    try {
+      console.log(`Trying ${userType} login:`, loginData);
 
-    // FRONTEND ONLY: tạm thời giả lập submit
-    setLoading(true);
-    setTimeout(() => {
-      console.log("Payload to backend:", {
-        method: tab,
-        identifier: tab === "email" ? form.email : form.phone,
-        password: form.password,
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(loginData),
       });
-      setLoading(false);
-      alert("Submitted! (Frontend demo)");
-    }, 600);
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Successful login
+        localStorage.setItem('auth_token', data.access_token);
+        localStorage.setItem('user_type', userType);
+        
+        if (userType === 'user') {
+          localStorage.setItem('user_data', JSON.stringify(data.user));
+        } else {
+          localStorage.setItem('client_data', JSON.stringify(data.client));
+        }
+
+        return { success: true, data, userType };
+      } else {
+        return { success: false, status: response.status, message: data.message };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   };
 
+  const submit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+
+  setLoading(true);
+  setErrors({});
+
+  try {
+    const loginData = tab === "email" 
+      ? { email: form.email, password: form.password }
+      : { phone: form.phone, password: form.password };
+
+    // Try Client login first
+    const clientResult = await attemptLogin(
+      'http://127.0.0.1:8000/api/client/login', 
+      loginData, 
+      'client'
+    );
+
+    if (clientResult.success) {
+      localStorage.setItem('auth_token', clientResult.data.access_token);
+      localStorage.setItem('user_type', 'client');
+      localStorage.setItem('client_data', JSON.stringify(clientResult.data.client));
+      
+      alert(`Chào mừng khách hàng: ${clientResult.data.client.name}!`);
+      window.location.href = "/";
+      return;
+    }
+
+    // If Client login fails, try User login
+    const userResult = await attemptLogin(
+      'http://127.0.0.1:8000/api/user/login', 
+      loginData, 
+      'user'
+    );
+
+    if (userResult.success) {
+      localStorage.setItem('auth_token', userResult.data.access_token);
+      localStorage.setItem('user_type', 'user');
+      localStorage.setItem('user_data', JSON.stringify(userResult.data.user));
+      
+      alert(`Chào mừng nhân viên: ${userResult.data.user.name} (${userResult.data.user.role})!`);
+      window.location.href = "/";
+      return;
+    }
+
+    // Both failed - show error
+    if (clientResult.status === 401 && userResult.status === 401) {
+      setErrors({ general: "Email/Phone hoặc mật khẩu không đúng" });
+    } else if (clientResult.error || userResult.error) {
+      setErrors({ general: "Lỗi kết nối. Vui lòng thử lại." });
+    } else {
+      setErrors({ general: "Đăng nhập thất bại" });
+    }
+
+  } catch (error) {
+    console.error("Login error:", error);
+    setErrors({ general: "Lỗi hệ thống. Vui lòng thử lại." });
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="container py-5">
       <div className="auth-card card p-4 p-md-5">
         <h2 className="mb-4">Log in to your account</h2>
 
-        {/* Tabs Email / Phone */}
+        {errors.general && (
+          <div className="alert alert-danger">
+            {errors.general}
+          </div>
+        )}
+
         <div className="auth-tabs mb-3">
           <button
             type="button"
@@ -94,7 +182,6 @@ export default function Login() {
             </div>
           )}
 
-          {/* Password + toggle eye */}
           <div className="mb-3 position-relative">
             <input
               name="password"
@@ -109,14 +196,12 @@ export default function Login() {
               type="button"
               className="btn btn-link auth-eye"
               onClick={() => setShowPass((s) => !s)}
-              aria-label={showPass ? "Hide password" : "Show password"}
             >
               <i className={`bi ${showPass ? "bi-eye-slash" : "bi-eye"}`} />
             </button>
             {errors.password && <div className="invalid-feedback d-block">{errors.password}</div>}
           </div>
 
-          {/* Links */}
           <div className="d-flex justify-content-between mb-3">
             <Link to="/signup" className="text-decoration-none">Sign up</Link>
             <Link to="/forgot-password" className="text-decoration-none">Forgot password?</Link>
@@ -126,7 +211,11 @@ export default function Login() {
             {loading ? "Logging in..." : "Log in"}
           </button>
 
-          <div className="text-center my-3">Log in with the booking number</div>
+          <div className="text-center my-3">
+            <small className="text-muted">
+              Hệ thống tự động phân biệt tài khoản khách hàng và nhân viên
+            </small>
+          </div>
 
           <p className="small text-muted mb-0">
             By logging in or signing up, you give your <a href="#!">Consent to personal data processing</a> and
