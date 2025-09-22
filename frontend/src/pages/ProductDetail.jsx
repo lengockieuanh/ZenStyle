@@ -637,7 +637,7 @@ function ProductDetail() {
                   </div>
                 </div>
 
-                <p><strong>Product Information:</strong></p>
+                <p><strong>Product Condition:</strong></p>
 
                 {isEditing ? (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>

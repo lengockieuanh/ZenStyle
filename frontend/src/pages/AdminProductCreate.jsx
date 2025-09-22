@@ -211,6 +211,7 @@ export default function AdminProductCreate() {
                     {loading ? 'Creating...' : 'Create Product'}
                   </button>
                   <button
+                  style={{height: "38px",marginTop:"10px"}}
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => navigate('/products')}
