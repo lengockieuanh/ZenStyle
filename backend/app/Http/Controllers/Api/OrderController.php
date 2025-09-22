@@ -14,10 +14,26 @@ use Exception;
 
 class OrderController extends Controller
 {
-    public function index()
-    {
-        //
+    public function index(Request $request)
+{
+    $user = $request->user();
+    
+    // Only staff can view all orders
+    if (!($user instanceof \App\Models\User)) {
+        return response()->json([
+            'message' => 'Only staff members can view all orders'
+        ], 403);
     }
+
+    $orders = Order::with(['client', 'user', 'orderDetails.inventory'])
+        ->orderBy('order_date', 'desc')
+        ->get();
+
+    return response()->json([
+        'orders' => $orders,
+        'staff_user' => $user->name
+    ]);
+}
 
     public function store(Request $request)
     {
@@ -78,10 +94,22 @@ class OrderController extends Controller
         return response()->json(['order' => $order], 201);
     }
 
-    public function show(string $id)
-    {
-        //
+   public function show(Request $request, string $id)
+{
+    $user = $request->user();
+    
+    $query = Order::with(['orderDetails.inventory', 'client', 'user']);
+    
+    // If it's a client, they can only see their own orders
+    if ($user instanceof \App\Models\Client) {
+        $query->where('client_id', $user->client_id);
     }
+    // Staff can see all orders
+    
+    $order = $query->findOrFail($id);
+    
+    return response()->json(['order' => $order]);
+}
 
     public function update(Request $request, string $id)
     {

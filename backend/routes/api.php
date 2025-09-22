@@ -12,16 +12,23 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Products API (public)
-Route::apiResource('products', InventoryController::class)->only([
-    'index', 'show', 'store', 'update', 'destroy'
-]);
+// Public product routes (everyone can view - including guests)
+Route::get('products', [InventoryController::class, 'index']);
+Route::get('products/{id}', [InventoryController::class, 'show']);
 
-// Product images
-Route::post('products/{id}/images', [InventoryController::class, 'addImage']);
-Route::delete('products/{id}/images/{imageId}', [InventoryController::class, 'deleteImage']);
+// Admin/Staff only product management routes
+Route::middleware(['auth:sanctum', 'role:admin,receptionist'])->group(function () {
+    Route::post('products', [InventoryController::class, 'store']);
+    Route::put('products/{id}', [InventoryController::class, 'update']);
+    Route::patch('products/{id}', [InventoryController::class, 'update']);
+    Route::delete('products/{id}', [InventoryController::class, 'destroy']);
+    
+    // Product images management (admin/staff only)
+    Route::post('products/{id}/images', [InventoryController::class, 'addImage']);
+    Route::delete('products/{id}/images/{imageId}', [InventoryController::class, 'deleteImage']);
+});
 
-// User authentication (cho nhân viên)
+// User authentication (for staff members)
 Route::prefix('user')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -32,7 +39,7 @@ Route::prefix('user')->group(function () {
     });
 });
 
-// Client authentication (cho khách hàng)
+// Client authentication (for customers)
 Route::prefix('client')->group(function () {
     Route::post('/register', [ClientAuthController::class, 'register']);
     Route::post('/login', [ClientAuthController::class, 'login']);
@@ -46,9 +53,9 @@ Route::prefix('client')->group(function () {
 // Protected routes - require authentication
 Route::middleware('auth:sanctum')->group(function () {
     // Orders API
-    Route::apiResource('orders', OrderController::class)->only([
-        'index', 'show', 'store'
-    ]);
+    Route::get('orders', [OrderController::class, 'index'])->middleware('role:admin,receptionist,stylist');
+    Route::get('orders/{id}', [OrderController::class, 'show']);
+    Route::post('orders', [OrderController::class, 'store']);
     
     // Feedbacks
     Route::post('feedbacks', [FeedbackController::class, 'store']);

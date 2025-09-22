@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./css/App.module.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -8,6 +9,7 @@ function ProductList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // số sản phẩm mỗi trang
   const navigate = useNavigate();
+  const { canManageProducts } = useAuth();
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/products")
@@ -37,13 +39,13 @@ function ProductList() {
 
   return (
     <div>
-      {/* Thanh filter */}
+      {/* Filter Bar with Add Product Button */}
       <div className={styles.filterBar}>
         <select
           value={selectedType}
           onChange={(e) => {
             setSelectedType(e.target.value);
-            setCurrentPage(1); // reset về trang 1 khi đổi filter
+            setCurrentPage(1);
           }}
         >
           <option value="All">ALL PRODUCT</option>
@@ -51,6 +53,16 @@ function ProductList() {
           <option value="SHAMP">SHAMPOO</option>
           <option value="GEL">HAIR GEL</option>
         </select>
+
+        {/* Add Product Button - Only visible to admin/receptionist */}
+        {canManageProducts && (
+          <Link
+            to="/admin/products/create"
+            className={styles.addProductBtn}
+          >
+            <span>+</span> Add New Product
+          </Link>
+        )}
       </div>
 
       {/* Danh sách sản phẩm */}
@@ -93,9 +105,8 @@ function ProductList() {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
-              className={`${styles.pageBtn} ${
-                page === currentPage ? styles.activePage : ""
-              }`}
+              className={`${styles.pageBtn} ${page === currentPage ? styles.activePage : ""
+                }`}
               onClick={() => setCurrentPage(page)}
             >
               {page}
