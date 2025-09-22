@@ -22,7 +22,8 @@ function ProductDetail() {
     unit_price: '',
     quantity: '',
     threshold: '',
-    type: ''
+    type: '',
+    description: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -44,7 +45,8 @@ function ProductDetail() {
           unit_price: data.unit_price || '',
           quantity: data.quantity || '',
           threshold: data.threshold || '',
-          type: data.type || 'COS'
+          type: data.type || 'COS',
+          description: data.description || ''
         });
 
         if (data.images && data.images.length > 0) {
@@ -493,7 +495,27 @@ function ProductDetail() {
           </div>
 
           {/* Description */}
-          {product.description && (
+       
+
+
+          {isEditing && isStaff ? (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Product Description:</label>
+              <input
+                type="text"
+                name="description"
+                value={editFormData.description}
+                onChange={handleEditChange}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '2px solid #007bff',
+                  borderRadius: '4px',
+                  backgroundColor: '#f8f9ff'
+                }}
+              />
+            </div>
+          ) : (
             <div className={styles.productDescription}>
               <h3>Product Description</h3>
               <p>{product.description}</p>
@@ -544,7 +566,7 @@ function ProductDetail() {
                 border: isEditing ? '2px solid #007bff' : '1px solid #dee2e6'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', minHeight: '40px' }}>
-                  <h4 style={{ margin: '0', lineHeight: '1.2' }}>Staff Management</h4>
+                  <h4 style={{ margin: '0', lineHeight: '1.2', marginRight:'25px' }}>Staff Management</h4>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     {!isEditing ? (
                       <>
@@ -557,10 +579,11 @@ function ProductDetail() {
                             padding: '10px 20px',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            fontWeight: '500'
+                            fontWeight: '500',
+                            width: "85px"
                           }}
                         >
-                          Edit Product
+                          Edit 
                         </button>
                         <button
                           onClick={handleDeleteProduct}
@@ -574,7 +597,7 @@ function ProductDetail() {
                             fontWeight: '500'
                           }}
                         >
-                          Delete Product
+                          Delete
                         </button>
                       </>
                     ) : (
@@ -657,8 +680,8 @@ function ProductDetail() {
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                     <p>📦 Stock Quantity: <strong>{product.quantity}</strong></p>
-                    <p>⚠ Alert Threshold: <strong>{product.threshold}</strong></p>
-                    <p>🏷 Category: <strong>{product.type}</strong></p>
+                    <p>🔴 Alert Threshold: <strong>{product.threshold}</strong></p>
+                    <p>📅 Category: <strong>{product.type}</strong></p>
                   </div>
                 )}
 

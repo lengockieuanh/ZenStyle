@@ -85,9 +85,9 @@ function ProductList() {
             <div className={styles.hotelInfo}>
               <h2>{p.name}</h2>
               <p className={styles.meta}>
-                📦 Số lượng: {p.quantity} • 💰 Giá: {p.unit_price} VND
+                📦 Quantity: {p.quantity} • 💰 Price: {p.unit_price} USD
               </p>
-              <p className={styles.desc}>Ngưỡng cảnh báo: {p.threshold}</p>
+              <p className={styles.desc}>Threshold: {p.threshold}</p>
               <button
                 className={styles.btn}
                 onClick={() => navigate(`/products/${p.item_id}`)}
