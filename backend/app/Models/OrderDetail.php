@@ -25,8 +25,8 @@ class OrderDetail extends Model
     }
 
     // Quan hệ với Inventory (sản phẩm nào)
-    public function item()
-    {
-        return $this->belongsTo(Inventory::class, 'item_id', 'item_id');
-    }
+    public function inventory()
+{
+    return $this->belongsTo(Inventory::class, 'item_id', 'item_id');
+}
 }

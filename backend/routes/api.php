@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ClientAuthController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\OrderController;
@@ -63,3 +64,30 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Public routes
 Route::get('feedbacks', [FeedbackController::class, 'index']);
+
+// Cart routes (client only)
+Route::middleware(['auth:sanctum', 'client.only'])->group(function () {
+    Route::apiResource('cart', CartController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::delete('cart/clear', [CartController::class, 'clear']);
+});
+
+
+// Protected routes - require authentication
+Route::middleware('auth:sanctum')->group(function () {
+    // Orders API
+    Route::get('orders', [OrderController::class, 'index'])->middleware('role:admin,receptionist,stylist');
+    Route::get('orders/{id}', [OrderController::class, 'show']);
+    Route::post('orders', [OrderController::class, 'store']);
+    
+    // Feedbacks
+    Route::post('feedbacks', [FeedbackController::class, 'store']);
+});
+
+// Public routes
+Route::get('feedbacks', [FeedbackController::class, 'index']);
+
+// Cart routes (client only)
+Route::middleware(['auth:sanctum', 'client.only'])->group(function () {
+    Route::apiResource('cart', CartController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::delete('cart/clear', [CartController::class, 'clear']);
+});

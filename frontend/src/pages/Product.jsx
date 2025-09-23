@@ -9,7 +9,7 @@ function ProductList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // số sản phẩm mỗi trang
   const navigate = useNavigate();
-  const { canManageProducts } = useAuth();
+  const { canManageProducts, isStaff, isClient } = useAuth();
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/products")
@@ -84,15 +84,50 @@ function ProductList() {
             </div>
             <div className={styles.hotelInfo}>
               <h2>{p.name}</h2>
-              <p className={styles.meta}>
-                📦 Quantity: {p.quantity} • 💰 Price: {p.unit_price} USD
-              </p>
-              <p className={styles.desc}>Threshold: {p.threshold}</p>
+
+              {/* Different info for staff vs clients */}
+              {isStaff ? (
+                // Staff see full inventory information
+                <>
+                  <div className={styles.meta}>
+                    <span className={styles.stockInfo}>
+                      📦 Stock: <strong>{p.quantity}</strong>
+                    </span>
+                    <span className={styles.priceInfo}>
+                      💰 Price: <strong>${p.unit_price}</strong>
+                    </span>
+                  </div>
+                  <p className={styles.desc}>
+                    🔴 Alert Threshold: {p.threshold}
+                    {p.quantity === 0 ? (
+                      <span style={{ color: '#dc3545', fontWeight: 'bold' }}> (Out of Stock!)</span>
+                    ) : p.quantity <= p.threshold ? (
+                      <span style={{ color: '#a58805ff', fontWeight: 'bold' }}> (Low Stock!)</span>
+                    ) : null}
+                  </p>
+                </>
+              ) : (
+                // Clients see simplified information
+                <div className={styles.meta}>
+                  <span className={styles.stockInfo}>
+                    📦 {p.quantity > 0 ? `${p.quantity} Available` : 'Out of Stock'}
+                  </span>
+                  <span className={styles.priceInfo}>
+                    💰 <strong>${p.unit_price}</strong>
+                  </span>
+                </div>
+              )}
+
               <button
                 className={styles.btn}
                 onClick={() => navigate(`/products/${p.item_id}`)}
+                disabled={!isStaff && p.quantity === 0}
+                style={{
+                  opacity: (!isStaff && p.quantity === 0) ? 0.5 : 1,
+                  cursor: (!isStaff && p.quantity === 0) ? 'not-allowed' : 'pointer'
+                }}
               >
-                Buy Now
+                {isStaff ? 'Manage Product' : (p.quantity > 0 ? 'Buy Now' : 'Out of Stock')}
               </button>
             </div>
           </div>

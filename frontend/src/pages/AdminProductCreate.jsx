@@ -12,6 +12,7 @@ export default function AdminProductCreate() {
     threshold: '',
     unit_price: '',
     type: 'COS',
+    description: '',
     image: null
   });
   const [errors, setErrors] = useState({});
@@ -67,6 +68,7 @@ export default function AdminProductCreate() {
       submitData.append('threshold', formData.threshold);
       submitData.append('unit_price', formData.unit_price);
       submitData.append('type', formData.type);
+      submitData.append('description', formData.description);
       
       if (formData.image) {
         submitData.append('image', formData.image);
@@ -191,6 +193,19 @@ export default function AdminProductCreate() {
                 </div>
 
                 <div className="mb-3">
+                  <label className="form-label">Product Description</label>
+                  <textarea
+                    className="form-control"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="3"
+                    placeholder="Enter product description..."
+                  />
+                  <small className="text-muted">Optional. Describe the product features and benefits.</small>
+                </div>
+
+                <div className="mb-3">
                   <label className="form-label">Product Image</label>
                   <input
                     type="file"
@@ -211,7 +226,7 @@ export default function AdminProductCreate() {
                     {loading ? 'Creating...' : 'Create Product'}
                   </button>
                   <button
-                  style={{height: "38px",marginTop:"10px"}}
+                    style={{height: "38px",marginTop:"10px"}}
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => navigate('/products')}

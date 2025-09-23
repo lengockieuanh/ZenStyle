@@ -14,6 +14,8 @@ function ProductDetail() {
   const [newImage, setNewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(1);
 
   // Edit mode states
   const [isEditing, setIsEditing] = useState(false);
@@ -94,7 +96,7 @@ function ProductDetail() {
       alert('Only customers can add items to cart');
       return;
     }
-    navigate("/checkout", { state: { product, quantity } });
+    setShowCartModal(true);
   };
 
   const handleBuyNow = () => {
@@ -280,6 +282,43 @@ function ProductDetail() {
       alert('Network error. Please try again.');
     }
   };
+  //Add to cart
+  const handleCartQuantityChange = (newQuantity) => {
+    if (newQuantity >= 1 && newQuantity <= product.quantity) {
+      setCartQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCartConfirm = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch('http://127.0.0.1:8000/api/cart', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          item_id: product.item_id,
+          quantity: cartQuantity
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setShowCartModal(false);
+        setCartQuantity(1);
+        alert(`${cartQuantity} ${product.name} added to cart!`);
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to add to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Network error. Please try again.');
+    }
+  };
+
   // Submit review - Only authenticated users
   const handleSubmitReview = async () => {
     if (!isAuthenticated) {
@@ -495,9 +534,6 @@ function ProductDetail() {
           </div>
 
           {/* Description */}
-       
-
-
           {isEditing && isStaff ? (
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px' }}>Product Description:</label>
@@ -538,20 +574,37 @@ function ProductDetail() {
           {/* Action buttons - Only show for clients */}
           {isClient && (
             <div className={styles.actionButtons}>
-              <button
-                className={styles.addToCartBtn}
-                onClick={handleAddToCart}
-                disabled={product.quantity === 0}
-              >
-                {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </button>
-              <button
-                className={styles.buyNowBtn}
-                onClick={handleBuyNow}
-                disabled={product.quantity === 0}
-              >
-                {product.quantity === 0 ? 'Out of Stock' : 'Buy Now'}
-              </button>
+              {product.quantity === 0 ? (
+                // Single prominent out of stock message
+                <div style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: '#f8f9fa',
+                  border: '2px solid #dee2e6',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  color: '#6c757d'
+                }}>
+                  <h4 style={{ margin: '0 0 5px 0', color: '#dc3545' }}>Currently Unavailable</h4>
+                  <p style={{ margin: '0', fontSize: '14px' }}>This product is temporarily out of stock</p>
+                </div>
+              ) : (
+                // Normal buttons when in stock
+                <>
+                  <button
+                    className={styles.addToCartBtn}
+                    onClick={handleAddToCart}
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    className={styles.buyNowBtn}
+                    onClick={handleBuyNow}
+                  >
+                    Buy Now
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -566,7 +619,7 @@ function ProductDetail() {
                 border: isEditing ? '2px solid #007bff' : '1px solid #dee2e6'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', minHeight: '40px' }}>
-                  <h4 style={{ margin: '0', lineHeight: '1.2', marginRight:'25px' }}>Staff Management</h4>
+                  <h4 style={{ margin: '0', lineHeight: '1.2', marginRight: '25px' }}>Staff Management</h4>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     {!isEditing ? (
                       <>
@@ -583,7 +636,7 @@ function ProductDetail() {
                             width: "85px"
                           }}
                         >
-                          Edit 
+                          Edit
                         </button>
                         <button
                           onClick={handleDeleteProduct}
@@ -787,8 +840,18 @@ function ProductDetail() {
                       ))}
                     </div>
                     <div style={{ fontSize: '14px', color: '#666' }}>
-                      {fb.user && <span>by {fb.user.name} ({fb.user.role})</span>}
-                      {fb.client && <span>by {fb.client.name} (Customer)</span>}
+                      {fb.user && (
+                        <span>
+                          by {fb.user.name}
+                          {isStaff && <span> ({fb.user.role})</span>}
+                        </span>
+                      )}
+                      {fb.client && (
+                        <span>
+                          by {fb.client.name}
+                          {isStaff && <span> (Customer)</span>}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <p style={{
@@ -805,6 +868,106 @@ function ProductDetail() {
           )}
         </div>
       </div>
+
+      {/* Add to Cart Modal */}
+      {showCartModal && isClient && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Add to Cart</h3>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+              <img
+                src={product.images?.[0]?.url || product.image_url || "/assets/img/default.jpg"}
+                alt={product.name}
+                style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px' }}
+              />
+              <div>
+                <h4 style={{ margin: '0 0 5px 0' }}>{product.name}</h4>
+                <p style={{ margin: '0', color: '#666' }}>${product.unit_price} USD</p>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#28a745' }}>
+                  {product.quantity} available
+                </p>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+                Quantity:
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  onClick={() => handleCartQuantityChange(cartQuantity - 1)}
+                  disabled={cartQuantity <= 1}
+                  style={{
+                    background: cartQuantity <= 1 ? '#ccc' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '4px',
+                    cursor: cartQuantity <= 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  -
+                </button>
+                <span style={{
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  minWidth: '40px',
+                  textAlign: 'center'
+                }}>
+                  {cartQuantity}
+                </span>
+                <button
+                  onClick={() => handleCartQuantityChange(cartQuantity + 1)}
+                  disabled={cartQuantity >= product.quantity}
+                  style={{
+                    background: cartQuantity >= product.quantity ? '#ccc' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '4px',
+                    cursor: cartQuantity >= product.quantity ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '15px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '4px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Subtotal:</span>
+                <strong>${(product.unit_price * cartQuantity).toFixed(2)} USD</strong>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => {
+                  setShowCartModal(false);
+                  setCartQuantity(1);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.submitBtn}
+                onClick={handleAddToCartConfirm}
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Review Modal - Only show if authenticated */}
       {showReview && isAuthenticated && (
