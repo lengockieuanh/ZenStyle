@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
+import AdminProductCreate from "./pages/AdminProductCreate";
+
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
           <Route path="contact" element={<Contact />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />  
+          <Route path="admin/products/create" element={<AdminProductCreate />} />
           {/* <Route path="*" element={<div className="container py-5">404 - Not found</div>} /> */}
         </Route>
       </Routes>

@@ -2,86 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $primaryKey = 'user_id';
-
-    protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'password',
-        'role', 
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
     
-      public function appointments()
-    {
-        return $this->hasMany(Appointment::class, 'user_id');
-    }
+    protected $fillable = [
+        'name', 'email', 'phone', 'password', 'role'
+    ];
 
-    public function clientHistories()
-    {
-        return $this->hasMany(ClientHistory::class, 'user_id');
-    }
-
-    public function schedules()
-    {
-        return $this->hasMany(UserSchedule::class, 'user_id');
-    }
-
-    public function attendances()
-    {
-        return $this->hasMany(UserAttendance::class, 'user_id');
-    }
-
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class, 'user_id');
-    }
-
-    public function feedbacks()
-    {
-        return $this->hasMany(Feedback::class, 'user_id');
-    }
-    public function orders()
-{
-    return $this->hasMany(Order::class, 'user_id', 'user_id');
-}
+    protected $hidden = ['password'];
+    protected $casts = ['password' => 'hashed'];
 }
